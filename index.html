@@ -9,30 +9,40 @@
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
-  <style type="">
+  <style>
   @media (max-width: 400px) {
     .narrow {display: block}
   }
-  input[type="submit"] {
-    padding: 0 16px;
-    height:36px;
-  }
+  input[type="submit"] {padding: 0 16px;height:36px;}
+  .error{color:#ff0000;margin:7px}
   </style>
 </head>
 <body>
 <div class="content">
   <center>
-    <h1>Next problems<span class="narrow"> </span>to solve</h1>
+    <h1 style="margin-bottom:0px;">Next problem<span class="narrow"> </span>to solve</h1>
+    <small>
+      from <a style="color:#333" href="http://sites.google.com/site/stevenhalim/" target="_blank">Competitive Programming</a> exercises
+    </small>
     <div style="margin-top:90px;">
       <div class="logo-subtext">Enter your <a href="https://uva.onlinejudge.org" target="_blank">UVa</a> username:</div>
+      <div class="error">{{.UsernameError}}</div>
     </div>
     <form method="POST" action="">
       <div>
-        <input id="username" maxlength="2048" name="username" title="Username" type="text" value="" aria-label="Username" autocomplete="off" style="text-align:center;margin:10px;height:20px;width:200px;">
+        <input type="hidden" name="userid" value="{{.UserID}}">
+        <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off" style="text-align:center;margin:10px;height:20px;width:200px;">
       </div>
-      <input type="submit" name="show-problems" value="Show problems">
+      <input type="submit" name="show-problems" value="Show all problems">
       <input type="submit" name="feeling-lucky" value="Feeling lucky!">
     </form>
+
+    <div style="max-width:400px;border-top:1px #666 solid;margin-top:150px;color:#666">
+      <small>
+        <a href="https://github.com/maru/uva2solve" target="_blank">https://github.com/maru/uva2solve</a>
+      </small>
+    </div>
+
   </center>
 </div>
 </body>

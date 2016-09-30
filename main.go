@@ -1,38 +1,111 @@
 package main
 
 import (
-        "io"
-        "io/ioutil"
-        "fmt"
-        "net/http"
+  // "bytes"
+  // "encoding/binary"
+  "fmt"
+  "html/template"
+  "io/ioutil"
+  "log"
+  "net/http"
 )
 
-// Load file
-func loadPage(filename string) ([]byte, error) {
-    page, err := ioutil.ReadFile(filename)
-    if err != nil {
-        return nil, err
-    }
-    return page, nil
+const (
+  APIUsernameToUserid = "http://uhunt.felix-halim.net/api/uname2uid/%s"
+)
+
+type UsernameInfo struct {
+  UsernameError  string
+  UserID string
+  Username string
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-  if r.Method == "POST" {
-    io.WriteString(w, "Hello world!")
-    return
-  }
-
-  // Default index.html
-  p, err := loadPage("index.html")
+/*
+ * Return default index.html
+ */
+func respIndex(w http.ResponseWriter, data UsernameInfo) {
+  t, err := template.ParseFiles("index.html")
   if err != nil {
     fmt.Fprintf(w, "Error %v", err)
     return
   }
-  fmt.Fprintf(w, string(p))
+  t.Execute(w, data)
+}
+
+/*
+ * Return default index.html
+ */
+func respLucky(w http.ResponseWriter, data UsernameInfo) {
+  t, err := template.ParseFiles("lucky.html")
+  if err != nil {
+    fmt.Fprintf(w, "Error %v", err)
+    return
+  }
+  t.Execute(w, data)
+}
+
+/*
+ *  Get userid by username, output error if username is not found.
+ */
+func getUserID(w http.ResponseWriter, username string) string {
+  url := fmt.Sprintf(APIUsernameToUserid, username)
+  resp, err := http.Get(url)
+  if err != nil {
+    fmt.Fprintf(w, "Error %v", err)
+    return ""
+  }
+  defer resp.Body.Close()
+  body, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    fmt.Fprintf(w, "Error %v", err)
+    return ""
+  }
+  id := string(body)
+  if id == "0" {
+    respIndex(w, UsernameInfo{"Username not found", "", username})
+    return ""
+  }
+  return id
+}
+
+/*
+ * Handles request to index page
+ */
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+  if r.Method == "POST" {
+    // Show problems to solve
+    var id string
+    username := r.PostFormValue("username")
+    // Check if username is valid
+    if id = getUserID(w, username); id == "" {
+        return
+    }
+    cookie := http.Cookie{ Name: "userid", Value: id }
+    http.SetCookie(w, &cookie)
+    // Show all unsolved problems
+    if r.PostFormValue("show-problems") != "" {
+
+    } else {
+      // Show a problem
+      respLucky(w, UsernameInfo{"", id, username})
+      return
+    }
+    respIndex(w, UsernameInfo{"", id, username})
+    return
+  }
+
+  // GET - Default
+  respIndex(w, UsernameInfo{})
+}
+
+/*
+ * Set handlers and start http server
+ */
+func httpServerStart(addr string) {
+  http.HandleFunc("/", IndexHandler)
+  log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 func main() {
-  fmt.Println("Web server ON")
-  http.HandleFunc("/", handler)
-  http.ListenAndServe(":8002", nil)
+  httpServerStart(":8002")
 }
