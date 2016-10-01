@@ -1,0 +1,16 @@
+{{define "index"}}
+{{template "header" .}}
+    <div style="margin-top:90px;">
+      <div class="logo-subtext">Enter your <a href="https://uva.onlinejudge.org" target="_blank">UVa</a> username:</div>
+    </div>
+    <form method="POST" action="">
+      <div class="error">{{.UsernameError}}</div>
+      <div>
+        <input type="hidden" name="userid" value="{{.UserID}}">
+        <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off" style="text-align:center;margin-bottom:10px;height:20px;width:200px;">
+      </div>
+      <input type="submit" name="show-problems" value="Show all problems">
+      <input type="submit" name="feeling-lucky" value="Feeling lucky!">
+    </form>
+{{template "footer" .}}
+{{end}}
