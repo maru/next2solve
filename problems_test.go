@@ -1,3 +1,8 @@
+// Next problem to solve
+// https://github.com/maru/next2solve
+//
+// Tests for problems.go functionality
+//
 package main
 
 import (
@@ -10,28 +15,42 @@ import (
 	"testing"
 )
 
-// Create mock API webserver. Body is configurable.
-func newMockAPIServer(body string) *httptest.Server {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, body)
+// Valid userid and username values for testing
+const (
+	userid = "46232"
+	username = "chicapi"
+)
+
+var (
+	idx int
+)
+
+// Create the web server and a mock API webserver (reponse is configurable).
+func initServer(apiResponse []string) *httptest.Server {
+	idx = 0
+	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if idx >= len(apiResponse) {
+			panic("Not enough API responses")
+		}
+		fmt.Fprint(w, apiResponse[idx])
+		idx++
 	}))
+	APIUrl = api.URL
 	return ts
 }
 
+// Get the index page
 func TestDefaultIndex(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	ts := initServer([]string{""})
 	defer ts.Close()
 
-	api := newMockAPIServer("")
-	defer api.Close()
-	APIUrl = api.URL
-
-	res, err := http.Get(ts.URL)
+	resp, err := http.Get(ts.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,21 +64,18 @@ func TestDefaultIndex(t *testing.T) {
 	}
 }
 
+// Post an invalid username
 func TestInvalidUsername(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	ts := initServer([]string{"0"})
 	defer ts.Close()
 
-	api := newMockAPIServer("0")
-	defer api.Close()
-	APIUrl = api.URL
-
-	username := "not_felix_halim"
-	res, err := http.PostForm(ts.URL, url.Values{"username": {username}})
+	username := "not_chicapi"
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,22 +89,17 @@ func TestInvalidUsername(t *testing.T) {
 	}
 }
 
+// Post a valid username
 func TestValidUser(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	ts := initServer([]string{userid})
 	defer ts.Close()
 
-	userid := "339"
-	api := newMockAPIServer(userid)
-	defer api.Close()
-	APIUrl = api.URL
-
-	username := "felix_halim"
-	res, err := http.PostForm(ts.URL, url.Values{"username": {username}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,5 +110,56 @@ func TestValidUser(t *testing.T) {
 	validUserID := "<input type=\"hidden\" name=\"userid\" value=\"" + userid + "\""
 	if i := bytes.Index(body, []byte(validUserID)); i < 0 {
 		t.Fatal("Expected userid", userid, "in input text")
+	}
+}
+
+// Check if the userid and username cookies are set
+func TestSetCookies(t *testing.T) {
+	ts := initServer([]string{userid})
+	defer ts.Close()
+
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range resp.Cookies() {
+		if c.Name == "userid" && c.Value != userid {
+			t.Fatal("Cookie userid value is not", userid, "(", c.Value, ")")
+		}
+		if c.Name == "username" && c.Value != username {
+			t.Fatal("Cookie username value is not", username, "(", c.Value, ")")
+		}
+	}
+	resp, err = http.Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range resp.Cookies() {
+		if c.Name == "userid" && c.Value != userid {
+			t.Fatal("Cookie userid value is not", userid, "(", c.Value, ")")
+		}
+		if c.Name == "username" && c.Value != username {
+			t.Fatal("Cookie username value is not", username, "(", c.Value, ")")
+		}
+	}
+}
+
+// Get random problem to solve
+func TestRandomProblem(t *testing.T) {
+	ts := initServer([]string{userid})
+	defer ts.Close()
+
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	lucky := []byte("lucky rainbow")
+	if i := bytes.Index(body, lucky); i < 0 {
+		t.Fatal("Expected lucky", string(body))
 	}
 }
