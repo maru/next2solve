@@ -9,23 +9,42 @@ package main
 
 import (
 	// "fmt"
-	// "io/ioutil"
-	"net/http"
+	"math"
+	// "net/http"
 )
 
-//
-//
-//
-func showProblems(w http.ResponseWriter, userInfo UserInfo) {
-	 //Math.max(1, 10 - Math.floor(Math.min(10, Math.log(p.dacu))));
-	 renderPage(w, "problems", userInfo)
+type ProblemInfo struct {
+	ProblemID      string
+	ProblemNumber  string
+	ProblemTitle   string
+	ProblemLevel   int64
+	ProblemAcRatio float64
+}
+
+func getLevel(dacu int64) int64 {
+	return int64(math.Max(1, 10-math.Floor(math.Min(10, math.Log(float64(dacu))))))
 }
 
 //
 //
 //
-func showRandomProblem(w http.ResponseWriter, userInfo UserInfo) {
-	 // Choose a problem with lowest dacu, starred first
+func getUnsolvedProblems(userid string) []ProblemInfo {
+	var unsolved []ProblemInfo
+	// problems := apiGetProblemList()
+	// userProblems := apiGetUserProblems(userid)
+	unsolved = append(unsolved, ProblemInfo{"15143", "31415", "Problem Title 1", 0, 0})
+	unsolved = append(unsolved, ProblemInfo{"15143", "31415", "Problem Title 2", 1, 2})
+	return unsolved
+}
 
-	 renderPage(w, "lucky", userInfo)
+//
+//
+//
+func getUnsolvedProblemRandom(userid string) []ProblemInfo {
+	// Choose a problem with lowest dacu, starred first
+	var unsolved []ProblemInfo
+	// problems := apiGetProblemList()
+	// userProblems := apiGetUserProblems(userid)
+	unsolved = append(unsolved, ProblemInfo{"15143", "31415", "Problem Title", 0, 0})
+	return unsolved
 }

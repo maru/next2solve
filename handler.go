@@ -1,7 +1,7 @@
 // Next problem to solve
 // https://github.com/maru/next2solve
 //
-// HTTP handlers
+// HTTP handler
 
 package main
 
@@ -16,10 +16,11 @@ type UserInfo struct {
 	UsernameError string
 	UserID        string
 	Username      string
+	Problems      []ProblemInfo
 }
 
 var (
-	APIUrl string
+	APIUrl    string
 	templates = template.Must(template.ParseFiles("html/header.html",
 		"html/footer.html", "html/index.html", "html/lucky.html", "html/problems.html"))
 )
@@ -34,9 +35,26 @@ func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 //
+// Show unsolved problems
+//
+func showProblems(w http.ResponseWriter, userInfo UserInfo) {
+	userInfo.Problems = getUnsolvedProblems(userInfo.UserID)
+	renderPage(w, "problems", userInfo)
+}
+
+//
+// Show a random unsolved problem
+//
+func showRandomProblem(w http.ResponseWriter, userInfo UserInfo) {
+	// Choose a problem with lowest dacu, starred first
+	userInfo.Problems = getUnsolvedProblemRandom(userInfo.UserID)
+	renderPage(w, "lucky", userInfo)
+}
+
+//
 // Get user information from cookies
 //
-func getUserInfo(r *http.Request) (UserInfo) {
+func getUserInfo(r *http.Request) UserInfo {
 	userInfo := UserInfo{}
 	if cookie, err := r.Cookie("userid"); err == nil {
 		userInfo.UserID = cookie.Value
@@ -69,13 +87,14 @@ func setUserInfo(w http.ResponseWriter, userInfo *UserInfo, userid, username str
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	userInfo := getUserInfo(r)
 	if r.Method == "POST" {
-    // Show problems to solve
+		// Show problems to solve
 		username := r.PostFormValue("username")
-    // Check if username is valid
-    userid, err := apiGetUserID(w, username)
+		// Check if username is valid
+		userid, err := apiGetUserID(w, username)
 		if err != nil {
-			renderPage(w, "index", UserInfo{err.Error(), "", username})
-      return
+			userInfo = UserInfo{err.Error(), "", username, nil}
+			renderPage(w, "index", userInfo)
+			return
 		}
 		// Set user information in a cookie
 		setUserInfo(w, &userInfo, userid, username)

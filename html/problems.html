@@ -8,15 +8,26 @@
         <input type="submit" name="show-problems" value="Show all problems">
         <input type="submit" name="feeling-lucky" value="Feeling lucky!">
       </form>
-      <div class="lucky rainbow">
-        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem=2070" target="_blank">
-          11129 -<span class="narrowx"> </span>Fighting Against a Polygonal Monster
-        </a>
+      <div class="problems">
+        <table>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Level</th>
+            <th>AC Ratio</th>
+          </tr>
+          {{ range $p := $.Problems }}
+          <tr>
+            <td>{{$p.ProblemNumber}}</td>
+            <td>
+              <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ProblemID}}" target="_blank">{{$p.ProblemTitle}}</a>
+            </td>
+            <td>{{$p.ProblemLevel}}</td>
+            <td>{{$p.ProblemAcRatio}}</td>
+          </tr>
+        {{ end }}
+        </table>
       </div>
-    	<p>Level 3 - Acceptance ratio: 48%</p>
-<!-- "dacu":7895,
-"sube":153,"noj":0,"inq":0,"ce":1055,"rf":0,"re":774,"ole":9,"tle":1535,"mle":1,"wa":7639,"pe":17,"ac":10377,
-153+1055+774+1535+9+1+7639+10377+17 -->
     </div>
 {{template "footer" .}}
 {{end}}

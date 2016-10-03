@@ -8,12 +8,12 @@
         <input type="submit" name="show-problems" value="Show all problems">
         <input type="submit" name="feeling-lucky" value="Feeling lucky!">
       </form>
-      <div class="lucky rainbow">
-        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{.ProblemID}}" target="_blank">
-          {{.ProblemNumber}} -<span class="narrowx"> </span>{{.ProblemTitle}}
+      <div class="lucky rainbow">{{ $p := index .Problems 0}}
+        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ProblemID}}" target="_blank">
+          {{$p.ProblemNumber}} -<span class="narrowx"> </span>{{$p.ProblemTitle}}
         </a>
       </div>
-    	<p>Level {{.ProblemLevel}} - Acceptance ratio: {{.ProblemAcRatio}}%</p>
+    	<p>Level {{$p.ProblemLevel}} - Acceptance ratio: {{$p.ProblemAcRatio}}%</p>
     </div>
 {{template "footer" .}}
 {{end}}

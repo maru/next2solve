@@ -6,24 +6,29 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-  "errors"
+  "encoding/json"
 )
+
+type CPBookChapter struct {
+  Title string `json:"title"`
+  Subchapters string `json:"arr"`
+}
 
 // URL paths of uHunt API
 // First argument is the server address, e.g. "http://uhunt.felix-halim.net"
 const (
-	APIUsernameToUserid = "%s/api/uname2uid/%s"
-	APIUserSubmissions = "%s/api/subs-user/%s"
+	APIUsernameToUserid          = "%s/api/uname2uid/%s"
+	APIUserSubmissions           = "%s/api/subs-user/%s"
 	APIUserSubmissionsToProblems = "%s/api/subs-pids/%s/%s/0"
-	APIProblemList = "%s/api/p"
+	APIProblemList               = "%s/api/p"
+  APIProblemListCPBook         = "%s/api/cpbook/%s"
 )
 
-//
 //  Get userid by username, output error if username is not found.
-//
 func apiGetUserID(w http.ResponseWriter, username string) (string, error) {
 	url := fmt.Sprintf(APIUsernameToUserid, APIUrl, username)
 	resp, err := http.Get(url)
@@ -44,7 +49,35 @@ func apiGetUserID(w http.ResponseWriter, username string) (string, error) {
 	return id, nil
 }
 
-// func Api
-// <!-- "dacu":7895,
-// "sube":153,"noj":0,"inq":0,"ce":1055,"rf":0,"re":774,"ole":9,"tle":1535,"mle":1,"wa":7639,"pe":17,"ac":10377,
-// 153+1055+774+1535+9+1+7639+10377+17 -->
+// Get problem list
+func apiGetProblemList() {
+  // Implemented now: only problems from the CP book 3rd edition
+  return apiGetProblemListCPbook(3)
+}
+
+// Get problem list
+func apiGetProblemListCPbook(version int) []string {
+  var problems []string
+  url := fmt.Sprintf(APIProblemListCPBook, APIUrl, version)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Fprintf(w, "Error %v", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	fmt.Fprintf(w, "Error %v", err)
+	// 	return "", err
+	// }
+  var cp []CPBookChapter
+  if err := json.Unmarshal(p, &cp); err != nil {
+      return err
+  }
+	return problems
+}
+
+func apiGetUserProblems(userid string) []string {
+	var problems []string
+	return problems
+}
