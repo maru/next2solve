@@ -30,12 +30,6 @@ import (
 	"time"
 )
 
-type UserSubmissions struct {
-	Name        string    `json:"name"`
-	Username    string    `json:"uname"`
-	Submissions [][]int64 `json:"subs"`
-}
-
 type Submission struct {
 	ID             int64
 	ProblemID      int64
@@ -89,9 +83,9 @@ func progress() {
 	// var acProblems []int
 	for i := 0; i < n; i++ {
 		var s Submission
-		s.VerdictID = userSubs.Submissions[i][2]
+		s.VerdictID = int64(userSubs.Submissions[i][2])
 		// problems[i] =
-		s.SubmissionTime = time.Unix(userSubs.Submissions[i][4], 0)
+		s.SubmissionTime = time.Unix(int64(userSubs.Submissions[i][4]), 0)
 		if s.VerdictID == 90 {
 			fmt.Printf("%s\n", s.SubmissionTime)
 		}

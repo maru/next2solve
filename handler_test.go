@@ -26,7 +26,7 @@ var (
 )
 
 // Create the web server and a mock API webserver (reponse is configurable).
-func InitServer(apiResponse []string) *httptest.Server {
+func initServer(apiResponse []string) *httptest.Server {
 	idx = 0
 	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
 	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func InitServer(apiResponse []string) *httptest.Server {
 
 // Get the index page
 func TestDefaultIndex(t *testing.T) {
-	ts := InitServer([]string{""})
+	ts := initServer([]string{""})
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL)
@@ -66,7 +66,7 @@ func TestDefaultIndex(t *testing.T) {
 
 // Post an invalid username
 func TestInvalidUsername(t *testing.T) {
-	ts := InitServer([]string{"0"})
+	ts := initServer([]string{"0"})
 	defer ts.Close()
 
 	username := "not_chicapi"
@@ -91,7 +91,7 @@ func TestInvalidUsername(t *testing.T) {
 
 // Post a valid username
 func TestValidUser(t *testing.T) {
-	ts := InitServer([]string{userid})
+	ts := initServer([]string{userid})
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -115,7 +115,7 @@ func TestValidUser(t *testing.T) {
 
 // Check if the userid and username cookies are set
 func TestSetCookies(t *testing.T) {
-	ts := InitServer([]string{userid})
+	ts := initServer([]string{userid})
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -146,7 +146,7 @@ func TestSetCookies(t *testing.T) {
 
 // Get random problem to solve
 func TestRandomProblem(t *testing.T) {
-	ts := InitServer([]string{userid})
+	ts := initServer([]string{userid})
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
@@ -170,7 +170,7 @@ func TestRandomProblem(t *testing.T) {
 
 // Get random problem to solve
 func TestProblems(t *testing.T) {
-	ts := InitServer([]string{userid})
+	ts := initServer([]string{userid})
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems": {""}})

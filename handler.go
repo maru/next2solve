@@ -90,7 +90,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// Show problems to solve
 		username := r.PostFormValue("username")
 		// Check if username is valid
-		userid, err := apiGetUserID(w, username)
+		userid, err := apiGetUserID(username)
 		if err != nil {
 			userInfo = UserInfo{err.Error(), "", username, nil}
 			renderPage(w, "index", userInfo)

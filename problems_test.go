@@ -5,22 +5,21 @@
 //
 package main
 
-// import (
-// 	"bytes"
-// 	"fmt"
-// 	"io/ioutil"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"net/url"
-// 	"testing"
-// )
+import (
+	// 	"bytes"
+	// 	"fmt"
+	// 	"io/ioutil"
+	// 	"net/http"
+	// 	"net/http/httptest"
+	// 	"net/url"
+	"testing"
+)
+
 //
-// // Valid userid and username values for testing
-// const (
-// 	userid   = "46232"
-// 	username = "chicapi"
-// )
-//
-// var (
-// 	idx int
-// )
+const ()
+
+var ()
+
+func TestGetProblems(t *testing.T) {
+
+}
