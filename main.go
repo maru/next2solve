@@ -19,5 +19,5 @@ func main() {
 	APIUrl := flag.String("api", "http://uhunt.felix-halim.net", "API URL")
 	addr := flag.String("addr", ":8002", "listening address")
 	flag.Parse()
-	httpServerStart(*addr, *APIUrl)
+	HttpServerStart(*addr, *APIUrl)
 }

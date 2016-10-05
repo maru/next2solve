@@ -8,38 +8,39 @@
 package main
 
 import (
-	// "fmt"
-	"math"
-	// "net/http"
+	// "next2solve/uhunt"
+	// "math"
+	"math/rand"
 )
 
 type ProblemInfo struct {
 	ProblemID      int
-	ProblemNumber  string
+	ProblemNumber  int64
 	ProblemTitle   string
 	ProblemLevel   int64
-	ProblemAcRatio float64
-}
-
-func getLevel(dacu int64) int64 {
-	return int64(math.Max(1, 10-math.Floor(math.Min(10, math.Log(float64(dacu))))))
+	ProblemAcRatio int64
 }
 
 // Get unsolved problems for a user, sort by level and acceptance ratio (desc)
-func getUnsolvedProblems(userid string) []ProblemInfo {
+func GetUnsolvedProblems(userid string) []ProblemInfo {
+	problems, err := apiServer.GetProblemList()
+	if err != nil {
+		return []ProblemInfo{}
+	}
+	userProblems, err := apiServer.GetUserProblems(userid)
+	if err != nil {
+		return []ProblemInfo{}
+	}
+
+	println("problems", len(problems))
+	println("userProblems", len(userProblems))
+	// Filter solved problems
 	var unsolved []ProblemInfo
-	problems, err := apiGetProblemList()
-	if err != nil {
-		return unsolved
-	}
-	userProblems, err := apiGetUserProblems(userid)
-	if err != nil {
-		return unsolved
-	}
-	for _, pid := range problems {
-		if _, ok := userProblems[pid]; ok {
-			// apiGetProblemInfo(pid)
-			unsolved = append(unsolved, ProblemInfo{pid, "31415", "Problem Title 2", 1, 2})
+	for _, pnum := range problems {
+		p, _ := apiServer.GetProblemInfoByNum(pnum)
+		if _, ok := userProblems[pnum]; !ok {
+			unsolved = append(unsolved, ProblemInfo{pnum, p.ProblemNumber, p.Title,
+				p.GetLevel(), p.GetAcceptanceRatio()})
 		}
 	}
 	return unsolved
@@ -48,11 +49,9 @@ func getUnsolvedProblems(userid string) []ProblemInfo {
 //
 //
 //
-func getUnsolvedProblemRandom(userid string) []ProblemInfo {
+func GetUnsolvedProblemRandom(userid string) []ProblemInfo {
 	// Choose a problem with lowest dacu, starred first
-	var unsolved []ProblemInfo
-	// problems := apiGetProblemList()
-	// userProblems := apiGetUserProblems(userid)
-	unsolved = append(unsolved, ProblemInfo{15143, "31415", "Problem Title", 0, 0})
-	return unsolved
+	unsolved := GetUnsolvedProblems(userid)
+	r := rand.Intn(len(unsolved))
+	return []ProblemInfo{unsolved[r]}
 }

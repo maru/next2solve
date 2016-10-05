@@ -3,15 +3,13 @@
 //
 // Tests for problems.go functionality
 //
-package main
+package uhunt
 
 import (
-	// 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	// 	"net/url"
 	"testing"
 )
 
@@ -20,26 +18,31 @@ const (
 	nCPBook3Problems = 1658
 	nUserProblems    = 319
 	problemID        = 1260
+	problemNumber    = 10319
+	userid           = "46232"
+	username         = "chicapi"
 )
 
-var ()
+var (
+	apiServer APIServer
+)
 
-func initApiServer(response string) *httptest.Server {
+func InitAPIServer(response string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, response)
 	}))
-	APIUrl = ts.URL
+	apiServer.Init(ts.URL)
 	return ts
 }
 
 func TestGetCPBookProblems(t *testing.T) {
-	p, err := ioutil.ReadFile("data/cpbook3.json")
+	p, err := ioutil.ReadFile("../data/cpbook3.json")
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
 	ts := initApiServer(string(p))
 	defer ts.Close()
-	problems, err := apiGetProblemListCPbook(3)
+	problems, err := apiServer.GetProblemListCPbook(3)
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
@@ -51,8 +54,9 @@ func TestGetCPBookProblems(t *testing.T) {
 func TestGetCPBookProblemsReal(t *testing.T) {
 	return
 
-	APIUrl = "http://uhunt.felix-halim.net"
-	problems, err := apiGetProblemListCPbook(3)
+	APIUrl := "http://uhunt.felix-halim.net"
+	apiServer.Init(APIUrl)
+	problems, err := apiServer.GetProblemListCPbook(3)
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
@@ -62,13 +66,13 @@ func TestGetCPBookProblemsReal(t *testing.T) {
 }
 
 func TestGetUserProblems(t *testing.T) {
-	p, err := ioutil.ReadFile("test/submissions.json")
+	p, err := ioutil.ReadFile("../test/submissions.json")
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
 	ts := initApiServer(string(p))
 	defer ts.Close()
-	problems, err := apiGetUserProblems(userid)
+	problems, err := apiServer.GetUserProblems(userid)
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
@@ -78,17 +82,17 @@ func TestGetUserProblems(t *testing.T) {
 }
 
 func TestGetProblemInfo(t *testing.T) {
-	p, err := ioutil.ReadFile("test/p1260.json")
+	p, err := ioutil.ReadFile("../test/p1260.json")
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
 	ts := initApiServer(string(p))
 	defer ts.Close()
-	problem, err := apiGetProblemInfo(problemID)
+	problem, err := apiServer.GetProblemInfo(problemID)
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
-  if problem.(Problem).ProblemID != problemID {
-    t.Fatalf("Error %v", "problem id does not match")
-  }
+	if problem.ProblemNumber != problemNumber {
+		t.Fatalf("Error %v", "problem id does not match")
+	}
 }

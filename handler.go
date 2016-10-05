@@ -10,9 +10,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"next2solve/uhunt"
 )
 
-type UserInfo struct {
+type TemplateData struct {
 	UsernameError string
 	UserID        string
 	Username      string
@@ -20,106 +21,92 @@ type UserInfo struct {
 }
 
 var (
-	APIUrl    string
+	apiServer uhunt.APIServer
 	templates = template.Must(template.ParseFiles("html/header.html",
 		"html/footer.html", "html/index.html", "html/lucky.html", "html/problems.html"))
 )
 
-//
 // Render page using a template with data
-//
 func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 	if err := templates.ExecuteTemplate(w, tmpl, data); err != nil {
 		fmt.Fprintf(w, "Error %v", err)
 	}
 }
 
-//
 // Show unsolved problems
-//
-func showProblems(w http.ResponseWriter, userInfo UserInfo) {
-	userInfo.Problems = getUnsolvedProblems(userInfo.UserID)
-	renderPage(w, "problems", userInfo)
+func showProblems(w http.ResponseWriter, data TemplateData) {
+	data.Problems = GetUnsolvedProblems(data.UserID)
+	renderPage(w, "problems", data)
 }
 
-//
 // Show a random unsolved problem
-//
-func showRandomProblem(w http.ResponseWriter, userInfo UserInfo) {
+func showRandomProblem(w http.ResponseWriter, data TemplateData) {
 	// Choose a problem with lowest dacu, starred first
-	userInfo.Problems = getUnsolvedProblemRandom(userInfo.UserID)
-	renderPage(w, "lucky", userInfo)
+	data.Problems = GetUnsolvedProblemRandom(data.UserID)
+	renderPage(w, "lucky", data)
 }
 
-//
 // Get user information from cookies
-//
-func getUserInfo(r *http.Request) UserInfo {
-	userInfo := UserInfo{}
+func getTemplateData(r *http.Request) TemplateData {
+	data := TemplateData{}
 	if cookie, err := r.Cookie("userid"); err == nil {
-		userInfo.UserID = cookie.Value
+		data.UserID = cookie.Value
 	}
 	if cookie, err := r.Cookie("username"); err == nil {
-		userInfo.Username = cookie.Value
+		data.Username = cookie.Value
 	}
-	return userInfo
+	return data
 }
 
-//
 // Set user information in cookies
-//
-func setUserInfo(w http.ResponseWriter, userInfo *UserInfo, userid, username string) {
-	if userInfo.UserID != userid {
+func setTemplateData(w http.ResponseWriter, data *TemplateData, userid, username string) {
+	if data.UserID != userid {
 		cookie := http.Cookie{Name: "userid", Value: userid}
 		http.SetCookie(w, &cookie)
-		userInfo.UserID = userid
+		data.UserID = userid
 	}
-	if userInfo.Username != username {
+	if data.Username != username {
 		cookie := http.Cookie{Name: "username", Value: username}
 		http.SetCookie(w, &cookie)
-		userInfo.Username = username
+		data.Username = username
 	}
 }
 
-//
 // Handles requests
-//
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := getUserInfo(r)
+	data := getTemplateData(r)
 	if r.Method == "POST" {
 		// Show problems to solve
 		username := r.PostFormValue("username")
 		// Check if username is valid
-		userid, err := apiGetUserID(username)
+		userid, err := apiServer.GetUserID(username)
 		if err != nil {
-			userInfo = UserInfo{err.Error(), "", username, nil}
-			renderPage(w, "index", userInfo)
+			data = TemplateData{err.Error(), "", username, nil}
+			renderPage(w, "index", data)
 			return
 		}
 		// Set user information in a cookie
-		setUserInfo(w, &userInfo, userid, username)
+		setTemplateData(w, &data, userid, username)
 
 		// Show all unsolved problems
 		if r.PostFormValue("show-problems") != "" {
 			// Show all unsolved problems
-			showProblems(w, userInfo)
+			showProblems(w, data)
 			return
 		} else {
 			// Show a random unsolved problem
-			showRandomProblem(w, userInfo)
+			showRandomProblem(w, data)
 			return
 		}
 	}
 
 	// GET - Default
-	renderPage(w, "index", userInfo)
+	renderPage(w, "index", data)
 }
 
-//
-// Set handlers and start http server
-//
-func httpServerStart(addr string, apiUrl string) {
-	APIUrl = apiUrl
+// Set handlers, initialize API server and start HTTP server
+func HttpServerStart(addr string, apiUrl string) {
+	apiServer.Init(apiUrl)
 	http.HandleFunc("/", RequestHandler)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

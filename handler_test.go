@@ -25,24 +25,29 @@ var (
 	idx int
 )
 
-// Create the web server and a mock API webserver (reponse is configurable).
-func initServer(apiResponse []string) *httptest.Server {
+func initApiServer(t *testing.T, responses []string) *httptest.Server {
 	idx = 0
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
-	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if idx >= len(apiResponse) {
-			panic("Not enough API responses")
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if idx >= len(responses) {
+			t.Fatal("Not enough API responses")
 		}
-		fmt.Fprint(w, apiResponse[idx])
+		fmt.Fprint(w, responses[idx])
 		idx++
 	}))
-	APIUrl = api.URL
+	apiServer.Init(ts.URL)
+	return ts
+}
+
+// Create the web server and a mock API webserver (reponse is configurable).
+func initServer(t *testing.T, apiResponses []string) *httptest.Server {
+	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	initApiServer(t, apiResponses)
 	return ts
 }
 
 // Get the index page
 func TestDefaultIndex(t *testing.T) {
-	ts := initServer([]string{""})
+	ts := initServer(t, []string{""})
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL)
@@ -66,7 +71,7 @@ func TestDefaultIndex(t *testing.T) {
 
 // Post an invalid username
 func TestInvalidUsername(t *testing.T) {
-	ts := initServer([]string{"0"})
+	ts := initServer(t, []string{"0"})
 	defer ts.Close()
 
 	username := "not_chicapi"
@@ -91,7 +96,8 @@ func TestInvalidUsername(t *testing.T) {
 
 // Post a valid username
 func TestValidUser(t *testing.T) {
-	ts := initServer([]string{userid})
+	responses := append([]string{userid}, loadAPIProblems(t)...)
+	ts := initServer(t, responses)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -115,7 +121,8 @@ func TestValidUser(t *testing.T) {
 
 // Check if the userid and username cookies are set
 func TestSetCookies(t *testing.T) {
-	ts := initServer([]string{userid})
+	responses := append([]string{userid}, loadAPIProblems(t)...)
+	ts := initServer(t, responses)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -146,7 +153,8 @@ func TestSetCookies(t *testing.T) {
 
 // Get random problem to solve
 func TestRandomProblem(t *testing.T) {
-	ts := initServer([]string{userid})
+	responses := append([]string{userid}, loadAPIProblems(t)...)
+	ts := initServer(t, responses)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
@@ -170,7 +178,8 @@ func TestRandomProblem(t *testing.T) {
 
 // Get random problem to solve
 func TestProblems(t *testing.T) {
-	ts := initServer([]string{userid})
+	responses := append([]string{userid}, loadAPIProblems(t)...)
+	ts := initServer(t, responses)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems": {""}})
@@ -182,8 +191,7 @@ func TestProblems(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	problems := []byte("problems")
-	if bytes.Index(body, problems) < 0 {
+	if bytes.Index(body, []byte("problems")) < 0 {
 		t.Fatal("Expected problems", string(body))
 	}
 
