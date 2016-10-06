@@ -94,7 +94,7 @@ func (api *APIServer) GetUserSubmissions(userid string) (APIUserSubmissions, err
 }
 
 // Get problem information by number
-func (api *APIServer) GetProblemInfoByNum(pnum int) (APIProblem, error) {
+func (api *APIServer) GetProblemByNum(pnum int) (APIProblem, error) {
 	url := fmt.Sprintf(UrlProblemInfoByNum, pnum)
 	resp, err := api.getResponse(url)
 	if err != nil {
