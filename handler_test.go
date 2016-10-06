@@ -6,6 +6,7 @@
 package main
 
 import (
+	"next2solve/uhunt"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -22,32 +23,18 @@ const (
 )
 
 var (
-	idx int
 )
 
-func initApiServer(t *testing.T, responses []string) *httptest.Server {
-	idx = 0
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if idx >= len(responses) {
-			t.Fatal("Not enough API responses")
-		}
-		fmt.Fprint(w, responses[idx])
-		idx++
-	}))
-	apiServer.Init(ts.URL)
-	return ts
-}
-
 // Create the web server and a mock API webserver (reponse is configurable).
-func initServer(t *testing.T, apiResponses []string) *httptest.Server {
+func initServer(t *testing.T) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
-	initApiServer(t, apiResponses)
+	uhunt.InitAPITestServer(t)
 	return ts
 }
 
 // Get the index page
 func TestDefaultIndex(t *testing.T) {
-	ts := initServer(t, []string{""})
+	ts := initServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL)
@@ -71,11 +58,11 @@ func TestDefaultIndex(t *testing.T) {
 
 // Post an invalid username
 func TestInvalidUsername(t *testing.T) {
-	ts := initServer(t, []string{"0"})
+	ts := initServer(t)
 	defer ts.Close()
 
-	username := "not_chicapi"
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
+	invalidUsername := "not_" + username
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,16 +75,15 @@ func TestInvalidUsername(t *testing.T) {
 	if bytes.Index(body, notFoundError) < 0 {
 		t.Fatal("Expected error 'Username not found'")
 	}
-	invalidUsername := "title=\"Username\" type=\"text\" value=\"" + username
-	if bytes.Index(body, []byte(invalidUsername)) < 0 {
-		t.Fatal("Expected username ", username, " in input text")
+	inputUsername := "title=\"Username\" type=\"text\" value=\"" + invalidUsername
+	if bytes.Index(body, []byte(inputUsername)) < 0 {
+		t.Fatal("Expected username ", invalidUsername, " in input text")
 	}
 }
 
 // Post a valid username
 func TestValidUser(t *testing.T) {
-	responses := append([]string{userid}, loadAPIProblems(t)...)
-	ts := initServer(t, responses)
+	ts := initServer(t)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -111,7 +97,7 @@ func TestValidUser(t *testing.T) {
 	}
 	emtpyError := []byte("<div class=\"error\"></div>")
 	if bytes.Index(body, emtpyError) < 0 {
-		t.Fatal("Expected error empty", string(body))
+		t.Fatal("Expected error empty")
 	}
 	validUserID := "<input type=\"hidden\" name=\"userid\" value=\"" + userid + "\""
 	if bytes.Index(body, []byte(validUserID)) < 0 {
@@ -121,8 +107,7 @@ func TestValidUser(t *testing.T) {
 
 // Check if the userid and username cookies are set
 func TestSetCookies(t *testing.T) {
-	responses := append([]string{userid}, loadAPIProblems(t)...)
-	ts := initServer(t, responses)
+	ts := initServer(t)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
@@ -153,8 +138,7 @@ func TestSetCookies(t *testing.T) {
 
 // Get random problem to solve
 func TestRandomProblem(t *testing.T) {
-	responses := append([]string{userid}, loadAPIProblems(t)...)
-	ts := initServer(t, responses)
+	ts := initServer(t)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
@@ -168,18 +152,17 @@ func TestRandomProblem(t *testing.T) {
 	}
 	lucky := []byte("lucky rainbow")
 	if bytes.Index(body, lucky) < 0 {
-		t.Fatal("Expected lucky", string(body))
+		t.Fatal("Expected lucky")
 	}
 
 	if bytes.Index(body, []byte("Error template")) >= 0 {
-		t.Fatal("Unexpected error", string(body))
+		t.Fatal("Unexpected error")
 	}
 }
 
 // Get random problem to solve
 func TestProblems(t *testing.T) {
-	responses := append([]string{userid}, loadAPIProblems(t)...)
-	ts := initServer(t, responses)
+	ts := initServer(t)
 	defer ts.Close()
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems": {""}})
@@ -192,10 +175,10 @@ func TestProblems(t *testing.T) {
 		t.Fatal(err)
 	}
 	if bytes.Index(body, []byte("problems")) < 0 {
-		t.Fatal("Expected problems", string(body))
+		t.Fatal("Expected problems")
 	}
 
 	if bytes.Index(body, []byte("Error template")) >= 0 {
-		t.Fatal("Unexpected error", string(body))
+		t.Fatal("Unexpected error")
 	}
 }

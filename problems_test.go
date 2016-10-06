@@ -31,7 +31,7 @@ func loadAPIProblems(t *testing.T) []string {
 		t.Fatalf("Error %v", err)
 	}
 	responses := []string{string(problems), string(submissions)}
-	problemInfo, err := ioutil.ReadFile("test/p1260.json")
+	problemInfo, err := ioutil.ReadFile("test/pinfo/1260")
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}

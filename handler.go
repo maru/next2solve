@@ -21,7 +21,6 @@ type TemplateData struct {
 }
 
 var (
-	apiServer uhunt.APIServer
 	templates = template.Must(template.ParseFiles("html/header.html",
 		"html/footer.html", "html/index.html", "html/lucky.html", "html/problems.html"))
 )
@@ -36,6 +35,11 @@ func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 // Show unsolved problems
 func showProblems(w http.ResponseWriter, data TemplateData) {
 	data.Problems = GetUnsolvedProblems(data.UserID)
+	if len(data.Problems) == 0 {
+		data = TemplateData{"No problems to solve", "", username, nil}
+		renderPage(w, "index", data)
+		return
+	}
 	renderPage(w, "problems", data)
 }
 
@@ -43,6 +47,11 @@ func showProblems(w http.ResponseWriter, data TemplateData) {
 func showRandomProblem(w http.ResponseWriter, data TemplateData) {
 	// Choose a problem with lowest dacu, starred first
 	data.Problems = GetUnsolvedProblemRandom(data.UserID)
+	if len(data.Problems) == 0 {
+		data = TemplateData{"No problems to solve", "", username, nil}
+		renderPage(w, "index", data)
+		return
+	}
 	renderPage(w, "lucky", data)
 }
 
@@ -79,7 +88,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// Show problems to solve
 		username := r.PostFormValue("username")
 		// Check if username is valid
-		userid, err := apiServer.GetUserID(username)
+		userid, err := GetUserID(username)
 		if err != nil {
 			data = TemplateData{err.Error(), "", username, nil}
 			renderPage(w, "index", data)
@@ -106,7 +115,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 // Set handlers, initialize API server and start HTTP server
 func HttpServerStart(addr string, apiUrl string) {
-	apiServer.Init(apiUrl)
+	InitAPIServer(apiUrl)
 	http.HandleFunc("/", RequestHandler)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

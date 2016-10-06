@@ -7,25 +7,28 @@ package uhunt
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"net/http"
 )
 
 // URL paths of uHunt API
 const (
-	APIUsernameToUserid  = "/api/uname2uid/%s"
-	APIUserSubmissions   = "/api/subs-user/%s"
-	APIProblemList       = "/api/p"
-	APIProblemListCPBook = "/api/cpbook/%d"
-	APIProblemInfoByNum  = "/api/p/num/%d"
+	UrlUsernameToUserid  = "/api/uname2uid/%s"
+	UrlUserSubmissions   = "/api/subs-user/%s"
+	UrlProblemList       = "/api/p"
+	UrlProblemListCPBook = "/api/cpbook/%d"
+	UrlProblemInfoByNum  = "/api/p/num/%d"
 )
 
 // Initialize API server with the host URL
 func (api *APIServer) Init(url string) {
 	api.urlServer = url
+}
+
+// Return the host URL
+func (api *APIServer) GetUrl() string {
+	return api.urlServer
 }
 
 // Send request to API and return response body
@@ -45,100 +48,61 @@ func (api *APIServer) getResponse(url string) ([]byte, error) {
 // Get userid by username, output error if username is not found.
 // Returns the userid as a string, or an empty string if error.
 func (api *APIServer) GetUserID(username string) (string, error) {
-	url := fmt.Sprintf(APIUsernameToUserid, username)
+	url := fmt.Sprintf(UrlUsernameToUserid, username)
 	resp, err := api.getResponse(url)
 	if err != nil {
 		return "", err
 	}
 	id := string(resp)
-	if id == "0" {
-		return "", errors.New("Username not found")
-	}
 	return id, nil
 }
 
-// Get problem list
-// Implemented now: only problems from the CP book 3rd edition
-func (api *APIServer) GetProblemList() ([]int, error) {
+// Get the problem list of UVa online judge.
+// Implemented now: only problems from the CP book 3rd edition.
+func (api *APIServer) GetProblemList() ([]APICPBookChapter, error) {
 	return api.GetProblemListCPbook(3)
 }
 
-// Get problem list
-func (api *APIServer) GetProblemListCPbook(version int) ([]int, error) {
-	var problems []int
-	url := fmt.Sprintf(APIProblemListCPBook, version)
+// Get the problem list from the CP book from edition 1, 2, or 3.
+func (api *APIServer) GetProblemListCPbook(edition int) ([]APICPBookChapter, error) {
+	url := fmt.Sprintf(UrlProblemListCPBook, edition)
 	resp, err := api.getResponse(url)
 	if err != nil {
-		return problems, err
+		return []APICPBookChapter{}, err
 	}
 	// Parse the data
-	var cpBook []CPBookChapter
-	if err := json.Unmarshal(resp, &cpBook); err != nil {
-		return problems, err
+	var cpProblems []APICPBookChapter
+	if err := json.Unmarshal(resp, &cpProblems); err != nil {
+		return []APICPBookChapter{}, err
 	}
-	// Create an array with the problem ids
-	numChapters := 0
-	numSubChapters := 100
-	numSubSubChapters := 1000
-	for _, chapter := range cpBook {
-		numChapters++
-		for _, subchapter := range chapter.Subchapters {
-			numSubChapters++
-			for _, subsubchapter := range subchapter.Subsubchapters {
-				numSubSubChapters++
-				arr := subsubchapter.([]interface{})
-				for _, p := range arr[1:] {
-					pid := int(math.Abs(p.(float64)))
-					problems = append(problems, pid)
-					api.cpProblems[pid] = CPProblem{p.(float64) < 0, []int{numChapters, numSubChapters, numSubSubChapters}}
-				}
-			}
-		}
-	}
-	return problems, nil
+
+	return cpProblems, nil
 }
 
-// Get user submissions, so we can obtain the solved problems
-func (api *APIServer) GetUserProblems(userid string) (map[int]bool, error) {
-	url := fmt.Sprintf(APIUserSubmissions, userid)
+// Get user submissions
+func (api *APIServer) GetUserSubmissions(userid string) (APIUserSubmissions, error) {
+	url := fmt.Sprintf(UrlUserSubmissions, userid)
 	resp, err := api.getResponse(url)
 	if err != nil {
-		return nil, err
+		return APIUserSubmissions{}, err
 	}
-	var userSubs UserSubmissions
+	var userSubs APIUserSubmissions
 	if err := json.Unmarshal(resp, &userSubs); err != nil {
-		return nil, err
+		return APIUserSubmissions{}, err
 	}
-
-	// Get only accepted (distinct) problems
-	// An element in the array contains:
-	//  0   Submission ID
-	//  1   Problem ID  (* we want this)
-	//  2   Verdict ID  (* and this with value 90 : Accepted)
-	//  3   Runtime
-	//  4   Submission Time (unix timestamp)
-	//  5   Language ID (1=ANSI C, 2=Java, 3=C++, 4=Pascal, 5=C++11)
-	//  6   Submission Rank
-	solved := make(map[int]bool)
-	for _, p := range userSubs.Submissions {
-		pid := int(math.Abs(p[1]))
-		if p[2] == 90 {
-			solved[pid] = true
-		}
-	}
-	return solved, nil
+	return userSubs, nil
 }
 
-func (api *APIServer) GetProblemInfoByNum(pnum int) (Problem, error) {
-	url := fmt.Sprintf(APIProblemInfoByNum, pnum)
+// Get problem information by number
+func (api *APIServer) GetProblemInfoByNum(pnum int) (APIProblem, error) {
+	url := fmt.Sprintf(UrlProblemInfoByNum, pnum)
 	resp, err := api.getResponse(url)
 	if err != nil {
-		return Problem{}, err
+		return APIProblem{}, err
 	}
-	var problem Problem
+	var problem APIProblem
 	if err := json.Unmarshal(resp, &problem); err != nil {
-		return Problem{}, err
+		return APIProblem{}, err
 	}
-	// ProblemInfo
 	return problem, nil
 }

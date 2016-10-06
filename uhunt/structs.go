@@ -11,23 +11,18 @@ import (
 
 type APIServer struct {
 	urlServer string
-	cpProblems map[int]CPProblem
 }
 
-type CPProblem struct {
-	star bool
-	chapter []int
-}
-type CPBookChapter struct {
+type APICPBookChapter struct {
 	Title       string             `json:"title"`
-	Subchapters []CPBookSubchapter `json:"arr"`
+	Subchapters []APICPBookSubchapter `json:"arr"`
 }
-type CPBookSubchapter struct {
+type APICPBookSubchapter struct {
 	Title          string        `json:"title"`
-	Subsubchapters []interface{} `json:"arr"`
+	Sections []interface{} `json:"arr"`
 }
 
-type Problem struct {
+type APIProblem struct {
 	ProblemID              int64  `json:"pid"`
 	ProblemNumber          int64  `json:"num"`
 	Title                  string `json:"title"`
@@ -53,25 +48,25 @@ type Problem struct {
 }
 
 // Get level (value between 1 and 10)
-func (p *Problem) GetLevel() int64 {
+func (p *APIProblem) GetLevel() int64 {
 	return int64(math.Max(1, 10-math.Floor(math.Min(10, math.Log(float64(p.Dacu))))))
 }
 
 // Get acceptance ratio
-func (p *Problem) GetAcceptanceRatio() int64 {
+func (p *APIProblem) GetAcceptanceRatio() int64 {
 	return p.NumAccepted * 100.0 / p.GetTotalSubmissions()
 }
 
 // Get total number of submissions
-func (p *Problem) GetTotalSubmissions() int64 {
+func (p *APIProblem) GetTotalSubmissions() int64 {
 	return p.NumNoVerdict + p.NumSubmissionError + p.NumCantBeJudged + p.NumInQueue +
 		p.NumCompilationError + p.NumRestrictedFunction + p.NumRuntimeError +
 		p.NumOutputLimitExceeded + p.NumTimeLimitExceeded + p.NumMemoryLimitExceeded +
 		p.NumWrongAnswer + p.NumPresentationError + p.NumAccepted
 }
 
-type UserSubmissions struct {
+type APIUserSubmissions struct {
 	Name        string      `json:"name"`
 	Username    string      `json:"uname"`
-	Submissions [][]float64 `json:"subs"`
+	Submissions [][]int64 `json:"subs"`
 }
