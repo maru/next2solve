@@ -18,12 +18,12 @@
           </tr>
           {{ range $p := $.Problems }}
           <tr>
-            <td>{{$p.ProblemNumber}}</td>
+            <td>{{$p.Number}}</td>
             <td>
-              <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ProblemID}}" target="_blank">{{$p.ProblemTitle}}</a>
+              <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">{{$p.Title}}</a>
             </td>
-            <td>{{$p.ProblemLevel}}</td>
-            <td>{{$p.ProblemAcRatio}}</td>
+            <td>{{$p.Level}}</td>
+            <td>{{$p.AcRatio}}</td>
           </tr>
         {{ end }}
         </table>

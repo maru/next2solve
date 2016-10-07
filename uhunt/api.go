@@ -90,12 +90,18 @@ func (api *APIServer) GetUserSubmissions(userid string) (APIUserSubmissions, err
 	if err := json.Unmarshal(resp, &userSubs); err != nil {
 		return APIUserSubmissions{}, err
 	}
+	userSubs.Submissions = make([]APISubmission, len(userSubs.TmpSubs))
+	for i, s := range userSubs.TmpSubs {
+		submission := APISubmission{s[0], s[1], s[2], s[3], s[4], s[5], s[6]}
+		userSubs.Submissions[i] = submission
+	}
+	userSubs.TmpSubs = nil
 	return userSubs, nil
 }
 
 // Get problem information by number
-func (api *APIServer) GetProblemByNum(pnum int) (APIProblem, error) {
-	url := fmt.Sprintf(UrlProblemInfoByNum, pnum)
+func (api *APIServer) GetProblemByNum(pNumber int64) (APIProblem, error) {
+	url := fmt.Sprintf(UrlProblemInfoByNum, pNumber)
 	resp, err := api.getResponse(url)
 	if err != nil {
 		return APIProblem{}, err

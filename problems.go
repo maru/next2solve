@@ -8,29 +8,30 @@
 package main
 
 import (
-	// "next2solve/uhunt"
-	// "math"
+	"errors"
+	"math"
 	"math/rand"
+	"next2solve/uhunt"
 )
 
 type CPProblem struct {
-	Star bool
-	Chapter int
+	Star       bool
+	Chapter    int
 	Subchapter int
-	Section int
+	Section    int
 }
 
 type ProblemInfo struct {
-	ProblemID      int
-	ProblemNumber  int64
-	ProblemTitle   string
-	ProblemLevel   int64
-	ProblemAcRatio int64
+	ID      int64
+	Number  int64
+	Title   string
+	Level   int64
+	AcRatio int64
 }
 
 var (
-	apiServer uhunt.APIServer
-	cpProblems map[int]CPProblem
+	apiServer  uhunt.APIServer
+	cpProblems map[int64]CPProblem
 )
 
 func InitAPIServer(url string) {
@@ -39,7 +40,7 @@ func InitAPIServer(url string) {
 
 // Call the API to get the user id from the username
 func GetUserID(username string) (string, error) {
-	id, err := apiServer.GetUserID(invalidUsername)
+	id, _ := apiServer.GetUserID(username)
 	if id == "0" {
 		return "", errors.New("Username not found")
 	}
@@ -55,22 +56,22 @@ func GetUnsolvedProblems(userid string) []ProblemInfo {
 		return []ProblemInfo{}
 	}
 	// Create an array with the problem ids
-	var problems []int
-	cpProblems = make(map[int]CPProblem)
+	var problems []int64
+	cpProblems = make(map[int64]CPProblem)
 	numChapters := 0
-	numSubChapters := 100
-	numSubSubChapters := 1000
+	numSubchapters := 100
+	numSections := 1000
 	for _, chapter := range cpBook {
 		numChapters++
 		for _, subchapter := range chapter.Subchapters {
-			numSubChapters++
-			for _, subsubchapter := range subchapter.Subsubchapters {
-				numSubSubChapters++
+			numSubchapters++
+			for _, subsubchapter := range subchapter.Sections {
+				numSections++
 				arr := subsubchapter.([]interface{})
 				for _, p := range arr[1:] {
-					pid := int(math.Abs(p.(float64)))
+					pid := int64(math.Abs(p.(float64)))
 					problems = append(problems, pid)
-					cpProblems[pid] = CPProblem{p.(float64) < 0, numChapters, numSubChapters, numSubSubChapters}
+					cpProblems[pid] = CPProblem{p.(float64) < 0, numChapters, numSubchapters, numSections}
 				}
 			}
 		}
@@ -82,28 +83,17 @@ func GetUnsolvedProblems(userid string) []ProblemInfo {
 	}
 
 	// Get only accepted (distinct) problems
-	// An element in the array contains:
-	//  0   Submission ID
-	//  1   Problem ID  (* we want this)
-	//  2   Verdict ID  (* and this with value 90 : Accepted)
-	//  3   Runtime
-	//  4   Submission Time (unix timestamp)
-	//  5   Language ID (1=ANSI C, 2=Java, 3=C++, 4=Pascal, 5=C++11)
-	//  6   Submission Rank
-	userProblems := make(map[int]bool)
+	userProblems := make(map[int64]bool)
 	for _, p := range userSubs.Submissions {
-		pid := int(math.Abs(p[1]))
-		if p[2] == 90 {
-			userProblems[pid] = true
+		if p.VerdictID == uhunt.VerdictAccepted {
+			userProblems[int64(p.ProblemID)] = true
 		}
 	}
 
-	println("problems", len(problems))
-	println("userProblems", len(userProblems))
 	// Filter solved problems
 	var unsolved []ProblemInfo
 	for _, pnum := range problems {
-		p, _ := apiServer.GetProblemInfoByNum(pnum)
+		p, _ := apiServer.GetProblemByNum(pnum)
 		if _, ok := userProblems[pnum]; !ok {
 			unsolved = append(unsolved, ProblemInfo{pnum, p.ProblemNumber, p.Title,
 				p.GetLevel(), p.GetAcceptanceRatio()})

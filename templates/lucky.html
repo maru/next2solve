@@ -9,11 +9,11 @@
         <input type="submit" name="feeling-lucky" value="Feeling lucky!">
       </form>
       <div class="lucky rainbow">{{ $p := index .Problems 0}}
-        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ProblemID}}" target="_blank">
-          {{$p.ProblemNumber}} -<span class="narrowx"> </span>{{$p.ProblemTitle}}
+        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">
+          {{$p.Number}} -<span class="narrowx"> </span>{{$p.Title}}
         </a>
       </div>
-    	<p>Level {{$p.ProblemLevel}} - Acceptance ratio: {{$p.ProblemAcRatio}}%</p>
+    	<p>Level {{$p.Level}} - Acceptance ratio: {{$p.AcRatio}}%</p>
     </div>
 {{template "footer" .}}
 {{end}}

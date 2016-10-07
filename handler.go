@@ -10,7 +10,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"next2solve/uhunt"
 )
 
 type TemplateData struct {
@@ -21,8 +20,9 @@ type TemplateData struct {
 }
 
 var (
-	templates = template.Must(template.ParseFiles("html/header.html",
-		"html/footer.html", "html/index.html", "html/lucky.html", "html/problems.html"))
+	templates = template.Must(template.ParseFiles("templates/header.html",
+		"templates/footer.html", "templates/index.html", "templates/lucky.html",
+		"templates/problems.html"))
 )
 
 // Render page using a template with data
@@ -36,7 +36,7 @@ func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 func showProblems(w http.ResponseWriter, data TemplateData) {
 	data.Problems = GetUnsolvedProblems(data.UserID)
 	if len(data.Problems) == 0 {
-		data = TemplateData{"No problems to solve", "", username, nil}
+		data = TemplateData{"No problems to solve", "", data.Username, nil}
 		renderPage(w, "index", data)
 		return
 	}
@@ -48,7 +48,7 @@ func showRandomProblem(w http.ResponseWriter, data TemplateData) {
 	// Choose a problem with lowest dacu, starred first
 	data.Problems = GetUnsolvedProblemRandom(data.UserID)
 	if len(data.Problems) == 0 {
-		data = TemplateData{"No problems to solve", "", username, nil}
+		data = TemplateData{"No problems to solve", "", data.Username, nil}
 		renderPage(w, "index", data)
 		return
 	}

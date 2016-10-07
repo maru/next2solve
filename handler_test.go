@@ -1,19 +1,21 @@
 // Next problem to solve
 // https://github.com/maru/next2solve
 //
-// Tests for problems.go functionality
+// Tests for handlers.go functionality
 //
 package main
 
 import (
-	"next2solve/uhunt"
 	"bytes"
-	"fmt"
+	"flag"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"next2solve/uhunt"
+	test "next2solve/testing"
 	"testing"
+	"os"
 )
 
 // Valid userid and username values for testing
@@ -23,19 +25,37 @@ const (
 )
 
 var (
+	realTest bool
 )
 
-// Create the web server and a mock API webserver (reponse is configurable).
-func initServer(t *testing.T) *httptest.Server {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
-	uhunt.InitAPITestServer(t)
+// HTTP API test server that responds all requests with an invalid response.
+// Wrap for test.InitAPITestServerInvalid function
+func initAPITestServerInvalid(t *testing.T, apiServer *uhunt.APIServer, response string) *httptest.Server {
+	ts := test.InitAPITestServerInvalid(t, response)
+	apiServer.Init(ts.URL)
 	return ts
+}
+
+// HTTP API test server, real API responses were cached in files.
+// Wrap for test.InitAPITestServer function
+func initAPITestServer(t *testing.T, apiServer *uhunt.APIServer) (*httptest.Server, *httptest.Server) {
+	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	// Test against the real uHunt API web server
+	if realTest {
+		APIUrl := "http://uhunt.felix-halim.net"
+		apiServer.Init(APIUrl)
+		return ts, nil
+	}
+	api := test.InitAPITestServer(t)
+	apiServer.Init(api.URL)
+	return ts, api
 }
 
 // Get the index page
 func TestDefaultIndex(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
 	resp, err := http.Get(ts.URL)
 	if err != nil {
@@ -58,8 +78,9 @@ func TestDefaultIndex(t *testing.T) {
 
 // Post an invalid username
 func TestInvalidUsername(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
 	invalidUsername := "not_" + username
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}})
@@ -83,8 +104,9 @@ func TestInvalidUsername(t *testing.T) {
 
 // Post a valid username
 func TestValidUser(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
 	if err != nil {
@@ -107,8 +129,9 @@ func TestValidUser(t *testing.T) {
 
 // Check if the userid and username cookies are set
 func TestSetCookies(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
 	if err != nil {
@@ -138,8 +161,9 @@ func TestSetCookies(t *testing.T) {
 
 // Get random problem to solve
 func TestRandomProblem(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
 	if err != nil {
@@ -156,16 +180,18 @@ func TestRandomProblem(t *testing.T) {
 	}
 
 	if bytes.Index(body, []byte("Error template")) >= 0 {
-		t.Fatal("Unexpected error")
+		t.Fatal("Unexpected error", string(body))
 	}
 }
 
 // Get random problem to solve
 func TestProblems(t *testing.T) {
-	ts := initServer(t)
-	defer ts.Close()
+	ts, api := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
 
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems": {""}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username},
+																					"show-problems": {"Show problems"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,4 +207,11 @@ func TestProblems(t *testing.T) {
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
 	}
+}
+
+// Initialize the test environment
+func TestMain(m *testing.M) {
+	flag.BoolVar(&realTest, "real", false, "Test with real uHunt API server")
+	flag.Parse()
+	os.Exit(m.Run())
 }
