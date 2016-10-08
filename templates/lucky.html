@@ -13,7 +13,8 @@
           {{$p.Number}} -<span class="narrowx"> </span>{{$p.Title}}
         </a>
       </div>
-    	<p>Level {{$p.Level}} - Acceptance ratio: {{$p.AcRatio}}%</p>
+    	<p>Level {{$p.Level}}</p>
+      <p>Acceptance ratio: {{$p.AcRatio}}% - Accepted users: {{$p.Dacu}}</p>
     </div>
 {{template "footer" .}}
 {{end}}

@@ -10,18 +10,18 @@ import (
 )
 
 const (
-	VerdictSubmissionError = 10
-	VerdictCantBeJudged	= 15
-	VerdictInQueue = 20
-	VerdictCompileError = 30
+	VerdictSubmissionError    = 10
+	VerdictCantBeJudged       = 15
+	VerdictInQueue            = 20
+	VerdictCompileError       = 30
 	VerdictRestrictedFunction = 35
-	VerdictRuntimeError = 40
-	VerdictOutputLimit = 45
-	VerdictTimeLimit = 50
-	VerdictMemoryLimit = 60
-	VerdictWrongAnswer = 70
-	VerdictPresentationError = 80
-	VerdictAccepted	 = 90
+	VerdictRuntimeError       = 40
+	VerdictOutputLimit        = 45
+	VerdictTimeLimit          = 50
+	VerdictMemoryLimit        = 60
+	VerdictWrongAnswer        = 70
+	VerdictPresentationError  = 80
+	VerdictAccepted           = 90
 )
 
 type APIServer struct {
@@ -81,17 +81,17 @@ func (p *APIProblem) GetTotalSubmissions() int64 {
 }
 
 type APIUserSubmissions struct {
-	Name        string    `json:"name"`
-	Username    string    `json:"uname"`
-	TmpSubs [][]int64 `json:"subs"`
+	Name        string          `json:"name"`
+	Username    string          `json:"uname"`
+	TmpSubs     [][]int64       `json:"subs"`
 	Submissions []APISubmission `json:"-"`
 }
 type APISubmission struct {
-	SubmissionID	int64
-	ProblemID	int64
-	VerdictID	int64
-	Runtime	int64
-	Time int64
-	Language int64
+	SubmissionID   int64
+	ProblemID      int64
+	VerdictID      int64
+	Runtime        int64
+	Time           int64
+	Language       int64
 	SubmissionRank int64
 }

@@ -9,9 +9,9 @@
 package uhunt
 
 import (
-	test "next2solve/testing"
 	"flag"
 	"net/http/httptest"
+	test "next2solve/testing"
 	"os"
 	"testing"
 )
@@ -56,8 +56,12 @@ func TestGetUrl(t *testing.T) {
 	ts := initAPITestServer(t, &apiServer)
 	defer test.CloseServer(ts)
 
-	if ts.URL != apiServer.GetUrl() {
-		t.Fatalf("Expected API server URL %s, got %s", ts.URL, apiServer.GetUrl())
+	url := "http://uhunt.felix-halim.net"
+	if ts != nil {
+		url = ts.URL
+	}
+	if url != apiServer.GetUrl() {
+		t.Fatalf("Expected API server URL %s, got %s", url, apiServer.GetUrl())
 	}
 }
 

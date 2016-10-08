@@ -10,9 +10,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path"
 	"runtime"
 	"testing"
-	"path"
 )
 
 // Close the test web server

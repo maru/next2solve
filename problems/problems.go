@@ -3,9 +3,8 @@
 //
 // Problems
 //
-// Number of Distinct Accepted User (DACU)
 
-package main
+package problems
 
 import (
 	"errors"
@@ -27,6 +26,7 @@ type ProblemInfo struct {
 	Title   string
 	Level   int64
 	AcRatio int64
+	Dacu    int64
 }
 
 var (
@@ -36,6 +36,7 @@ var (
 
 func InitAPIServer(url string) {
 	apiServer.Init(url)
+	// loadProblemList
 }
 
 // Call the API to get the user id from the username
@@ -47,11 +48,25 @@ func GetUserID(username string) (string, error) {
 	return id, nil
 }
 
-// Call the API to get the problem list (to solve) and the solved problems by
-// the user.
 // Get the unsolved problems, sort by level and acceptance ratio (desc).
-func GetUnsolvedProblems(userid string) []ProblemInfo {
-	cpBook, err := apiServer.GetProblemList()
+// Calls the API to get the problem list (from the CP3 book), the details of
+// each problem and the submissions by the user.
+func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
+	userSubs, err := apiServer.GetUserSubmissions(userid)
+	if err != nil || userSubs.Username == "" {
+		return []ProblemInfo{}
+	}
+
+	// Get only accepted (distinct) problems
+	userProblems := make(map[int64]bool)
+	for _, p := range userSubs.Submissions {
+		if p.VerdictID == uhunt.VerdictAccepted {
+			userProblems[int64(p.ProblemID)] = true
+		}
+	}
+
+	// Get problem list of CP3 book
+	cpBook, err := apiServer.GetProblemListCPbook(3)
 	if err != nil {
 		return []ProblemInfo{}
 	}
@@ -77,32 +92,23 @@ func GetUnsolvedProblems(userid string) []ProblemInfo {
 		}
 	}
 
-	userSubs, err := apiServer.GetUserSubmissions(userid)
-	if err != nil {
-		return []ProblemInfo{}
-	}
-
-	// Get only accepted (distinct) problems
-	userProblems := make(map[int64]bool)
-	for _, p := range userSubs.Submissions {
-		if p.VerdictID == uhunt.VerdictAccepted {
-			userProblems[int64(p.ProblemID)] = true
-		}
-	}
-
 	// Filter solved problems
 	var unsolved []ProblemInfo
 	for _, pnum := range problems {
 		p, _ := apiServer.GetProblemByNum(pnum)
 		if _, ok := userProblems[pnum]; !ok {
 			unsolved = append(unsolved, ProblemInfo{pnum, p.ProblemNumber, p.Title,
-				p.GetLevel(), p.GetAcceptanceRatio()})
+				p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu})
 		}
 	}
 	return unsolved
 }
 
-// Get the unsolved problems and return one random problem.
+func GetUnsolvedProblems(userid string) []ProblemInfo {
+	return GetUnsolvedProblemsCPBook(userid)
+}
+
+// Get the unsolved problems by GetUnsolvedProblems and return one random problem.
 func GetUnsolvedProblemRandom(userid string) []ProblemInfo {
 	// Choose a problem with lowest dacu, starred first
 	unsolved := GetUnsolvedProblems(userid)
