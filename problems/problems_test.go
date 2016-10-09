@@ -26,6 +26,14 @@ var (
 	realTest bool
 )
 
+// HTTP API test server that responds all requests with an invalid response.
+// Wrap for test.InitAPITestServerInvalid function
+func initAPITestServerInvalid(t *testing.T, response []string) *httptest.Server {
+	ts := test.InitAPITestServerInvalid(t, response)
+	InitAPIServer(ts.URL)
+	return ts
+}
+
 // HTTP API test server, real API responses were cached in files.
 // Wrap for test.InitAPITestServer function
 func initAPITestServer(t *testing.T) *httptest.Server {
@@ -35,26 +43,26 @@ func initAPITestServer(t *testing.T) *httptest.Server {
 		InitAPIServer(APIUrl)
 		return nil
 	}
-	api := test.InitAPITestServer(t)
-	InitAPIServer(api.URL)
-	return api
+	ts := test.InitAPITestServer(t)
+	InitAPIServer(ts.URL)
+	return ts
 }
 
 // Test initialize API server
 func TestInitAPIServer(t *testing.T) {
-	api := initAPITestServer(t)
-	defer test.CloseServer(api)
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
 
-	InitAPIServer(api.URL)
-	if api.URL != apiServer.GetUrl() {
-		t.Fatalf("Expected API server URL %s, got %s", api.URL, apiServer.GetUrl())
+	InitAPIServer(ts.URL)
+	if ts.URL != apiServer.GetUrl() {
+		t.Fatalf("Expected API server URL %s, got %s", ts.URL, apiServer.GetUrl())
 	}
 }
 
 // Test get userid with invalid username
 func TestGetUserIDInvalid(t *testing.T) {
-	api := initAPITestServer(t)
-	defer test.CloseServer(api)
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
 
 	invalidUsername := "not_" + username
 	id, err := GetUserID(invalidUsername)
@@ -68,8 +76,8 @@ func TestGetUserIDInvalid(t *testing.T) {
 
 // Test get userid with valid username
 func TestGetUserIDValid(t *testing.T) {
-	api := initAPITestServer(t)
-	defer test.CloseServer(api)
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
 
 	id, err := GetUserID(username)
 	if err != nil {
@@ -82,12 +90,67 @@ func TestGetUserIDValid(t *testing.T) {
 
 // Test GetUnsolvedProblemsCPBook, invalid userid
 func TestGetUnsolvedProblemsCPBookInvalidUserid(t *testing.T) {
-	api := initAPITestServer(t)
-	defer test.CloseServer(api)
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemsCPBook("0")
 	if len(problems) != 0 {
 		t.Fatalf("Expected empty problem list")
+	}
+}
+
+// Test GetUnsolvedProblemsCPBook, valid userid
+func TestGetUnsolvedProblemsCPBookValidUserid(t *testing.T) {
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblemsCPBook(userid)
+	if len(problems) == 0 {
+		t.Fatalf("Expected problem list")
+	}
+}
+
+// Test GetUnsolvedProblemsCPBook, valid userid
+func TestGetUnsolvedProblemsCPBookInvalidResponse(t *testing.T) {
+	ts := initAPITestServerInvalid(t, []string{"", ""})
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblemsCPBook(userid)
+	if len(problems) != 0 {
+		t.Fatalf("Expected empty problem list")
+	}
+}
+
+// Test GetUnsolvedProblems, valid userid
+func TestGetUnsolvedProblemsValidUserid(t *testing.T) {
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblems(userid)
+	if len(problems) == 0 {
+		t.Fatalf("Expected problem list")
+	}
+}
+
+// Test GetUnsolvedProblemRandom, invalid userid
+func TestGetUnsolvedProblemRandomInvalidUserid(t *testing.T) {
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblemRandom("0")
+	if len(problems) != 0 {
+		t.Fatalf("Expected empty problem list")
+	}
+}
+
+// Test GetUnsolvedProblemRandom, valid userid
+func TestGetUnsolvedProblemRandomValidUserid(t *testing.T) {
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblemRandom(userid)
+	if len(problems) == 0 {
+		t.Fatalf("Expected problem list")
 	}
 }
 

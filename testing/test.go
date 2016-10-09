@@ -15,6 +15,10 @@ import (
 	"testing"
 )
 
+var (
+	idx int
+)
+
 // Close the test web server
 func CloseServer(ts *httptest.Server) {
 	if ts != nil {
@@ -23,9 +27,14 @@ func CloseServer(ts *httptest.Server) {
 }
 
 // HTTP API test server that responds all requests with an invalid response.
-func InitAPITestServerInvalid(t *testing.T, response string) *httptest.Server {
+func InitAPITestServerInvalid(t *testing.T, response []string) *httptest.Server {
+	idx = 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, response)
+		if (idx >= len(response)) {
+			panic("Not enough responses!")
+		}
+		fmt.Fprint(w, response[idx])
+		idx++
 	}))
 	return ts
 }

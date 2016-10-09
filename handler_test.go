@@ -31,7 +31,7 @@ var (
 // HTTP API test server that responds all requests with an invalid response.
 // Wrap for test.InitAPITestServerInvalid function
 func initAPITestServerInvalid(t *testing.T, response string) *httptest.Server {
-	ts := test.InitAPITestServerInvalid(t, response)
+	ts := test.InitAPITestServerInvalid(t, []string{response})
 	problems.InitAPIServer(ts.URL)
 	return ts
 }

@@ -11,6 +11,7 @@ import (
 	"math"
 	"math/rand"
 	"next2solve/uhunt"
+	"os"
 )
 
 type CPProblem struct {
@@ -32,26 +33,51 @@ type ProblemInfo struct {
 var (
 	apiServer  uhunt.APIServer
 	cpProblems map[int64]CPProblem
+	cache *Cache
 )
 
 func InitAPIServer(url string) {
 	apiServer.Init(url)
-	// loadProblemList
+	cache = NewCache()
+	if err := cache.CreateNamespace("userid"); err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+	if err := cache.CreateNamespace("submissions"); err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
+	if err := cache.CreateNamespace("problem"); err != nil {
+		println(err.Error())
+		os.Exit(1)
+	}
 }
+	// cache.LoadProblemListCP3()
 
 // Call the API to get the user id from the username
 func GetUserID(username string) (string, error) {
-	id, _ := apiServer.GetUserID(username)
-	if id == "0" {
+	// Get userid from cache, if found and valid.
+	// Otherwise, call the API and set the value in the cache
+	id, ok := cache.Get("userid", username)
+	if !ok {
+		id, _ = apiServer.GetUserID(username)
+		cache.Set("userid", username, id)
+	}
+	// Check userid
+	if id.(string) == "0" {
 		return "", errors.New("Username not found")
 	}
-	return id, nil
+	return id.(string), nil
 }
 
 // Get the unsolved problems, sort by level and acceptance ratio (desc).
 // Calls the API to get the problem list (from the CP3 book), the details of
 // each problem and the submissions by the user.
 func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
+	// var userSubs APIUserSubmissions
+	// if cache.GetUserSubmissions(userid) {
+	//
+	// }
 	userSubs, err := apiServer.GetUserSubmissions(userid)
 	if err != nil || userSubs.Username == "" {
 		return []ProblemInfo{}
