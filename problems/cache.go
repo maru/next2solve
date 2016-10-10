@@ -7,19 +7,14 @@
 package problems
 
 import (
-  "errors"
+  // "errors"
   "time"
   "sync"
 )
 
 type Cache struct {
-  items map[string]NamespaceCache
-  mutex sync.Mutex
-}
-
-type NamespaceCache struct {
   items map[string]CacheItem
-  Duration  time.Duration
+  duration  time.Duration
   mutex sync.Mutex
 }
 
@@ -28,61 +23,35 @@ type CacheItem struct {
   expiration int64
 }
 
-func NewCache() (*Cache) {
+// Return a new cache
+func NewCache(duration time.Duration) (*Cache) {
   var cache *Cache
   cache = new(Cache)
-  cache.items = make(map[string]NamespaceCache)
+  cache.items = make(map[string]CacheItem)
+  cache.duration = time.Duration(duration)
   return cache
 }
 
-func (c *Cache) CreateNamespace(namespace string) (error) {
-  defer c.mutex.Unlock()
-  c.mutex.Lock()
-
-  ns, ok := cache.items[namespace]
-  if ok {
-    return errors.New("Namespace " + namespace + " exists")
-  }
-  ns.items = make(map[string]CacheItem)
-  return nil
-}
-
-// Get value from item key, from cache namespace.
+// Get value from item key.
 // Return value and true if found, otherwise nil and false.
-func (c *Cache) Get(namespace string, key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (interface{}, bool) {
   defer c.mutex.Unlock()
   c.mutex.Lock()
 
-  ns, ok := c.items[namespace]
-  if !ok {
-    return nil, false
-  }
-
-  defer ns.mutex.Unlock()
-  ns.mutex.Lock()
-
-  item, ok := ns.items[key]
+  item, ok := c.items[key]
   if !ok {
     return nil, false
   }
   return item.value, true
 }
 
-// Set value in item key, in cache namespace.
+// Set value in item key.
 // Return error if any.
-func (c *Cache) Set(namespace string, key string, value interface{}) (error) {
+func (c *Cache) Set(key string, value interface{}) (error) {
   defer c.mutex.Unlock()
   c.mutex.Lock()
 
-  ns, ok := c.items[namespace]
-  if !ok {
-    return errors.New("Namespace " + namespace + " not found.")
-  }
-
-  defer ns.mutex.Unlock()
-  ns.mutex.Lock()
-
-  expiration := time.Now().Add(ns.Duration).UnixNano()
-  ns.items[key] = CacheItem{value, expiration}
+  expiration := time.Now().Add(c.duration).UnixNano()
+  c.items[key] = CacheItem{value, expiration}
   return nil
 }
