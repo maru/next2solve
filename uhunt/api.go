@@ -18,6 +18,7 @@ const (
 	UrlUserSubmissions   = "/api/subs-user/%s"
 	UrlProblemList       = "/api/p"
 	UrlProblemListCPBook = "/api/cpbook/%d"
+	UrlProblemInfoByID   = "/api/p/id/%d"
 	UrlProblemInfoByNum  = "/api/p/num/%d"
 )
 
@@ -100,8 +101,22 @@ func (api *APIServer) GetUserSubmissions(userid string) (APIUserSubmissions, err
 }
 
 // Get problem information by number
-func (api *APIServer) GetProblemByNum(pNumber int64) (APIProblem, error) {
+func (api *APIServer) GetProblemByNum(pNumber int) (APIProblem, error) {
 	url := fmt.Sprintf(UrlProblemInfoByNum, pNumber)
+	resp, err := api.getResponse(url)
+	if err != nil {
+		return APIProblem{}, err
+	}
+	var problem APIProblem
+	if err := json.Unmarshal(resp, &problem); err != nil {
+		return APIProblem{}, err
+	}
+	return problem, nil
+}
+
+// Get problem information by ID
+func (api *APIServer) GetProblemByID(pID int) (APIProblem, error) {
+	url := fmt.Sprintf(UrlProblemInfoByID, pID)
 	resp, err := api.getResponse(url)
 	if err != nil {
 		return APIProblem{}, err

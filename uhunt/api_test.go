@@ -244,7 +244,7 @@ func TestGetUserSubmissionsEmpty(t *testing.T) {
 	}
 }
 
-// Test get problem details
+// Test get problem details by number
 func TestGetProblemByNum(t *testing.T) {
 	var apiServer APIServer
 	ts := initAPITestServer(t, &apiServer)
@@ -259,7 +259,7 @@ func TestGetProblemByNum(t *testing.T) {
 	}
 }
 
-// Test get problem details, invalid response
+// Test get problem details by number, invalid response
 func TestGetProblemByNumInvalidResponse(t *testing.T) {
 	var apiServer APIServer
 	ts := initAPITestServerInvalid(t, &apiServer, "")
@@ -285,7 +285,7 @@ func TestGetProblemByNumInvalidResponse(t *testing.T) {
 	}
 }
 
-// Test get problem details, empty number of problems
+// Test get problem details by number, empty number of problems
 func TestGetProblemByNumEmpty(t *testing.T) {
 	var apiServer APIServer
 	ts := initAPITestServerInvalid(t, &apiServer, "{}")
@@ -296,6 +296,62 @@ func TestGetProblemByNumEmpty(t *testing.T) {
 		t.Fatalf("Error %v", err)
 	}
 	if problem.ProblemID == problemID {
+		t.Fatalf("Error expected an empty response")
+	}
+}
+
+// Test get problem details by id
+func TestGetProblemByID(t *testing.T) {
+	var apiServer APIServer
+	ts := initAPITestServer(t, &apiServer)
+	defer test.CloseServer(ts)
+
+	problem, err := apiServer.GetProblemByID(problemID)
+	if err != nil {
+		t.Fatalf("Error %v", err)
+	}
+	if problem.ProblemNumber != problemNumber {
+		t.Fatalf("Error %v", "problem does not match")
+	}
+}
+
+// Test get problem details by ID, invalid response
+func TestGetProblemByIDInvalidResponse(t *testing.T) {
+	var apiServer APIServer
+	ts := initAPITestServerInvalid(t, &apiServer, "")
+	defer test.CloseServer(ts)
+
+	problem, err := apiServer.GetProblemByID(problemID)
+	if err == nil {
+		t.Fatalf("Error %v", "expected json: cannot unmarshal object")
+	}
+	if problem.ProblemNumber == problemNumber {
+		t.Fatalf("Error expected an empty response")
+	}
+
+	// empty JSON object
+	ts = initAPITestServerInvalid(t, &apiServer, "[]")
+
+	problem, err = apiServer.GetProblemByID(problemID)
+	if err == nil {
+		t.Fatalf("Error %v", "expected json: cannot unmarshal object")
+	}
+	if problem.ProblemNumber == problemNumber {
+		t.Fatalf("Error expected an empty response")
+	}
+}
+
+// Test get problem details by ID, empty number of problems
+func TestGetProblemByIDEmpty(t *testing.T) {
+	var apiServer APIServer
+	ts := initAPITestServerInvalid(t, &apiServer, "{}")
+	defer test.CloseServer(ts)
+
+	problem, err := apiServer.GetProblemByID(problemID)
+	if err != nil {
+		t.Fatalf("Error %v", err)
+	}
+	if problem.ProblemNumber == problemNumber {
 		t.Fatalf("Error expected an empty response")
 	}
 }

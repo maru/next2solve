@@ -22,26 +22,26 @@ type CPProblem struct {
 }
 
 type ProblemInfo struct {
-	ID      int64
-	Number  int64
+	ID      int
+	Number  int
 	Title   string
-	Level   int64
-	AcRatio int64
-	Dacu    int64
+	Level   int
+	AcRatio int
+	Dacu    int
 }
 
 const (
-		cacheDurationUser = time.Hour
-		cacheDurationSubmissions = time.Hour
-		cacheDurationProblem = 15*time.Minute
+	cacheDurationUser        = time.Hour
+	cacheDurationSubmissions = time.Hour
+	cacheDurationProblem     = 15 * time.Minute
 )
 
 var (
-	apiServer  uhunt.APIServer
-	cpProblems map[int64]CPProblem
-	cpTitles map[int]string
-	cache map[string]*Cache
-	problemList	[]int64
+	apiServer   uhunt.APIServer
+	cache       map[string]*Cache
+	cpProblems  map[int]CPProblem
+	cpTitles    map[int]string
+	problemList []int
 )
 
 // Initialize API server and cache
@@ -55,40 +55,85 @@ func InitAPIServer(url string) {
 	cache["submissions"] = NewCache(cacheDurationSubmissions)
 	cache["problem"] = NewCache(cacheDurationProblem)
 
-	// Load chapter titles and problem list from CP3 book
+	// Load list of problems to solve from the CP3 book
 	loadProblemListCP3()
 }
 
+// Load chapter titles and the list of problems to solve from the CP3 book.
 func loadProblemListCP3() {
+	println("Loading problems...")
 	// Get problem list of CP3 book
 	cpBook, err := apiServer.GetProblemListCPbook(3)
 	if err != nil {
+		println("Error: couldn't load CP3 problem list from API")
 		return
 	}
-	// Create an array with the problem ids
-	cpProblems = make(map[int64]CPProblem)
+	// Initialize
+	cpProblems = make(map[int]CPProblem)
 	cpTitles = make(map[int]string)
+	problemList = []int{}
 	numChapter := 0
 	numSubchapter := 100
 	numSection := 1000
+
+	// Load titles and problems
 	for _, chapter := range cpBook {
+		// Chapter
 		numChapter++
 		cpTitles[numChapter] = chapter.Title
 		for _, subchapter := range chapter.Subchapters {
+			// Subchapter
 			numSubchapter++
 			cpTitles[numSubchapter] = subchapter.Title
 			for _, section := range subchapter.Sections {
+				// Section
 				numSection++
 				arr := section.([]interface{})
 				cpTitles[numSection] = arr[0].(string)
-				for _, p := range arr[1:] {
-					pid := int64(math.Abs(p.(float64)))
-					problemList = append(problemList, pid)
-					cpProblems[pid] = CPProblem{p.(float64) < 0, numChapter, numSubchapter, numSection}
+				for _, problemNumber := range arr[1:] {
+					// Get problem from API server
+					pNum := int(math.Abs(problemNumber.(float64)))
+					p, err := apiServer.GetProblemByNum(pNum)
+					if err != nil {
+						println("Error: couldn't load problem ", pNum, ":", err.Error())
+						continue
+					}
+					// Set problem in cache
+					problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
+						p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu}
+					pID := p.ProblemID
+					cache["problem"].Set(string(pID), problem)
+
+					// Save CP3 problem information
+					if _, ok := cpProblems[pID]; !ok {
+						problemList = append(problemList, pID)
+						cpProblems[pID] = CPProblem{problemNumber.(float64) < 0,
+							numChapter, numSubchapter, numSection}
+					}
 				}
 			}
 		}
 	}
+	// Sort problemList by star first, level asc, acratio desc, dacu desc
+	println("Done.")
+}
+
+// Return problem information (from cache or API)
+func getProblem(pID int) ProblemInfo {
+	problem, ok := cache["problem"].Get(string(pID))
+	if !ok {
+		p, err := apiServer.GetProblemByID(pID)
+		if err != nil {
+			println("Error: couldn't load problem ID", pID, ":", err.Error())
+			return ProblemInfo{}
+		}
+		// Set problem in cache
+		problem = ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
+			p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu}
+		pID := p.ProblemID
+		cache["problem"].Set(string(pID), problem)
+	}
+	return problem.(ProblemInfo)
 }
 
 // Call the API to get the user id from the username
@@ -107,16 +152,17 @@ func GetUserID(username string) (string, error) {
 	return id.(string), nil
 }
 
-func getUserSubmissions(userid string) (uhunt.APIUserSubmissions) {
-	userSubs, ok := cache["submissions"].Get(userid)
-	if !ok {
-		userSubs, err := apiServer.GetUserSubmissions(userid)
-		if err != nil || userSubs.Username == "" {
-			return uhunt.APIUserSubmissions{}
-		}
-		cache["submissions"].Set(userid, userSubs)
+func getUserSubmissions(userid string) []uhunt.APISubmission {
+	if userSubs, ok := cache["submissions"].Get(userid); ok {
+		us := userSubs.(uhunt.APIUserSubmissions)
+		return us.Submissions
 	}
-	return userSubs.(uhunt.APIUserSubmissions)
+	userSubs, err := apiServer.GetUserSubmissions(userid)
+	if err != nil || userSubs.Username == "" {
+		return []uhunt.APISubmission{}
+	}
+	cache["submissions"].Set(userid, userSubs)
+	return userSubs.Submissions
 }
 
 // Get the unsolved problems, sort by level and acceptance ratio (desc).
@@ -125,51 +171,19 @@ func getUserSubmissions(userid string) (uhunt.APIUserSubmissions) {
 func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
 
 	// Get only accepted (distinct) problems
-	userProblems := make(map[int64]bool)
-	userSubs := getUserSubmissions(userid)
-	if userSubs.Username == "" {
-		return []ProblemInfo{}
-	}
-	for _, p := range userSubs.Submissions {
-		if p.VerdictID == uhunt.VerdictAccepted {
-			userProblems[int64(p.ProblemID)] = true
+	userProblems := make(map[int]bool)
+	submissions := getUserSubmissions(userid)
+	for _, subm := range submissions {
+		if subm.IsAccepted() {
+			userProblems[subm.ProblemID] = true
+
 		}
 	}
-
-	// Get problem list of CP3 book
-	cpBook, err := apiServer.GetProblemListCPbook(3)
-	if err != nil {
-		return []ProblemInfo{}
-	}
-	// Create an array with the problem ids
-	var problems []int64
-	cpProblems = make(map[int64]CPProblem)
-	numChapters := 0
-	numSubchapters := 100
-	numSections := 1000
-	for _, chapter := range cpBook {
-		numChapters++
-		for _, subchapter := range chapter.Subchapters {
-			numSubchapters++
-			for _, subsubchapter := range subchapter.Sections {
-				numSections++
-				arr := subsubchapter.([]interface{})
-				for _, p := range arr[1:] {
-					pid := int64(math.Abs(p.(float64)))
-					problems = append(problems, pid)
-					cpProblems[pid] = CPProblem{p.(float64) < 0, numChapters, numSubchapters, numSections}
-				}
-			}
-		}
-	}
-
 	// Filter solved problems
 	var unsolved []ProblemInfo
-	for _, pnum := range problems {
-		p, _ := apiServer.GetProblemByNum(pnum)
-		if _, ok := userProblems[pnum]; !ok {
-			unsolved = append(unsolved, ProblemInfo{pnum, p.ProblemNumber, p.Title,
-				p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu})
+	for _, pID := range problemList {
+		if _, ok := userProblems[pID]; !ok {
+			unsolved = append(unsolved, getProblem(pID))
 		}
 	}
 	return unsolved

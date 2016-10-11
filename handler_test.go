@@ -30,10 +30,11 @@ var (
 
 // HTTP API test server that responds all requests with an invalid response.
 // Wrap for test.InitAPITestServerInvalid function
-func initAPITestServerInvalid(t *testing.T, response string) *httptest.Server {
-	ts := test.InitAPITestServerInvalid(t, []string{response})
-	problems.InitAPIServer(ts.URL)
-	return ts
+func initAPITestServerInvalid(t *testing.T, response []string) (*httptest.Server, *httptest.Server) {
+	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	api := test.InitAPITestServerInvalid(t, response)
+	problems.InitAPIServer(api.URL)
+	return ts, api
 }
 
 // HTTP API test server, real API responses were cached in files.
@@ -145,7 +146,12 @@ func TestSetCookies(t *testing.T) {
 			t.Fatal("Cookie username value is not", username, "(", c.Value, ")")
 		}
 	}
-	resp, err = http.Get(ts.URL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", ts.URL, nil)
+	for _, c := range resp.Cookies() {
+		req.AddCookie(c)
+	}
+	resp, err = client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,8 +190,31 @@ func TestRandomProblem(t *testing.T) {
 	}
 }
 
-// Get random problem to solve
-func TestProblems(t *testing.T) {
+// Get random problem to solve, but nothing to solve
+func TestRandomProblemEmpty(t *testing.T) {
+	ts, api := initAPITestServerInvalid(t, []string{"[]", userid, "{}"})
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Index(body, []byte("<div class=\"error\">No problems to solve</div>")) < 0 {
+		t.Fatalf("Expected no problems")
+	}
+}
+
+// Show problems to solve
+func TestShowProblemsOk(t *testing.T) {
 	ts, api := initAPITestServer(t)
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
@@ -206,6 +235,30 @@ func TestProblems(t *testing.T) {
 
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
+	}
+}
+
+// Test show problems, but nothing to solve
+func TestShowProblemsEmpty(t *testing.T) {
+	ts, api := initAPITestServerInvalid(t, []string{"[]", userid, "{}"})
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username},
+		"show-problems": {"Show problems"}})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bytes.Index(body, []byte("<div class=\"error\">No problems to solve</div>")) < 0 {
+		t.Fatalf("Expected no problems")
 	}
 }
 

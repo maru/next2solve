@@ -38,42 +38,50 @@ type APICPBookSubchapter struct {
 }
 
 type APIProblem struct {
-	ProblemID              int64  `json:"pid"`
-	ProblemNumber          int64  `json:"num"`
+	ProblemID              int    `json:"pid"`
+	ProblemNumber          int    `json:"num"`
 	Title                  string `json:"title"`
-	Dacu                   int64  `json:"dacu"`
-	BestRuntime            int64  `json:"mrun"`
-	BestUsedMemory         int64  `json:"mmem"`
-	NumNoVerdict           int64  `json:"nover"`
-	NumSubmissionError     int64  `json:"sube"`
-	NumCantBeJudged        int64  `json:"noj"`
-	NumInQueue             int64  `json:"inq"`
-	NumCompilationError    int64  `json:"ce"`
-	NumRestrictedFunction  int64  `json:"rf"`
-	NumRuntimeError        int64  `json:"re"`
-	NumOutputLimitExceeded int64  `json:"ole"`
-	NumTimeLimitExceeded   int64  `json:"tle"`
-	NumMemoryLimitExceeded int64  `json:"mle"`
-	NumWrongAnswer         int64  `json:"wa"`
-	NumPresentationError   int64  `json:"pe"`
-	NumAccepted            int64  `json:"ac"`
-	RunTimeLimit           int64  `json:"rtl"`
-	Status                 int64  `json:"status"`
-	Rej                    int64  `json:"rej"`
+	Dacu                   int    `json:"dacu"`
+	BestRuntime            int    `json:"mrun"`
+	BestUsedMemory         int    `json:"mmem"`
+	NumNoVerdict           int    `json:"nover"`
+	NumSubmissionError     int    `json:"sube"`
+	NumCantBeJudged        int    `json:"noj"`
+	NumInQueue             int    `json:"inq"`
+	NumCompilationError    int    `json:"ce"`
+	NumRestrictedFunction  int    `json:"rf"`
+	NumRuntimeError        int    `json:"re"`
+	NumOutputLimitExceeded int    `json:"ole"`
+	NumTimeLimitExceeded   int    `json:"tle"`
+	NumMemoryLimitExceeded int    `json:"mle"`
+	NumWrongAnswer         int    `json:"wa"`
+	NumPresentationError   int    `json:"pe"`
+	NumAccepted            int    `json:"ac"`
+	RunTimeLimit           int    `json:"rtl"`
+	Status                 int    `json:"status"`
+	Rej                    int    `json:"rej"`
 }
 
 // Get level (value between 1 and 10)
-func (p *APIProblem) GetLevel() int64 {
-	return int64(math.Max(1, 10-math.Floor(math.Min(10, math.Log(float64(p.Dacu))))))
+func (p *APIProblem) GetLevel() int {
+	dacuLog := math.Log(float64(p.Dacu) + 1)
+	maxLevel := math.Floor(math.Min(10, dacuLog))
+	level := math.Max(1, 10 - maxLevel)
+	ret := int(level)
+	return ret
 }
 
 // Get acceptance ratio
-func (p *APIProblem) GetAcceptanceRatio() int64 {
-	return p.NumAccepted * 100.0 / p.GetTotalSubmissions()
+func (p *APIProblem) GetAcceptanceRatio() int {
+	total := p.GetTotalSubmissions()
+	if total <= 0 {
+		return 0
+	}
+	return (p.NumAccepted * 100.0)/total
 }
 
 // Get total number of submissions
-func (p *APIProblem) GetTotalSubmissions() int64 {
+func (p *APIProblem) GetTotalSubmissions() int {
 	return p.NumNoVerdict + p.NumSubmissionError + p.NumCantBeJudged + p.NumInQueue +
 		p.NumCompilationError + p.NumRestrictedFunction + p.NumRuntimeError +
 		p.NumOutputLimitExceeded + p.NumTimeLimitExceeded + p.NumMemoryLimitExceeded +
@@ -83,15 +91,19 @@ func (p *APIProblem) GetTotalSubmissions() int64 {
 type APIUserSubmissions struct {
 	Name        string          `json:"name"`
 	Username    string          `json:"uname"`
-	TmpSubs     [][]int64       `json:"subs"`
+	TmpSubs     [][]int         `json:"subs"`
 	Submissions []APISubmission `json:"-"`
 }
 type APISubmission struct {
-	SubmissionID   int64
-	ProblemID      int64
-	VerdictID      int64
-	Runtime        int64
-	Time           int64
-	Language       int64
-	SubmissionRank int64
+	SubmissionID   int
+	ProblemID      int
+	VerdictID      int
+	Runtime        int
+	Time           int
+	Language       int
+	SubmissionRank int
+}
+
+func (s *APISubmission) IsAccepted() bool {
+	return s.VerdictID == VerdictAccepted
 }
