@@ -17,7 +17,7 @@ import (
 const (
 	nCP3BookProblems = 1655
 	nCP3BookTitles   = 213
-	// nUnsolvedProblems = 1589
+	nUnsolvedProblems = 1337
 	problemID = 1998
 	problemNumber = 11057
 	problemTitle = "Exact Sum"
@@ -111,10 +111,16 @@ func TestLoadProblemListCP3(t *testing.T) {
 // Test get problem information, invalid problem ID
 func TestGetProblemInvalid(t *testing.T) {
 	// API server sends empty JSON object
-	ts := initAPITestServerInvalid(t, []string{"{}"})
+	ts := initAPITestServerInvalid(t, []string{"[]", "{}", "[]", ""})
 	defer test.CloseServer(ts)
 
 	problem := getProblem(problemID + 1000000)
+	if problem.Number == problemNumber || problem.Title == problemTitle {
+		t.Fatalf("Error expected empty problem information")
+	}
+
+	// Invalid JSON
+	problem = getProblem(problemID + 1000000)
 	if problem.Number == problemNumber || problem.Title == problemTitle {
 		t.Fatalf("Error expected empty problem information")
 	}
@@ -125,6 +131,20 @@ func TestGetProblemOk(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
+	problem := getProblem(problemID)
+	if problem.Number != problemNumber || problem.Title != problemTitle {
+		t.Fatalf("Error problem number or title does not match")
+	}
+}
+
+// Test get problem information, valid problem ID, not found in chache.
+func TestGetProblemSetCache(t *testing.T) {
+	ts := initAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	problemID := 70
+	problemNumber := 134
+	problemTitle := "Loglan-A Logical Language"
 	problem := getProblem(problemID)
 	if problem.Number != problemNumber || problem.Title != problemTitle {
 		t.Fatalf("Error problem number or title does not match")
@@ -148,7 +168,6 @@ func TestGetUserIDInvalid(t *testing.T) {
 
 // Test get userID with valid username
 func TestGetUserIDValid(t *testing.T) {
-	return
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
@@ -161,34 +180,32 @@ func TestGetUserIDValid(t *testing.T) {
 	}
 }
 
-// Test GetUnsolvedProblemsCPBook, invalid userID
-func TestGetUnsolvedProblemsCPBookInvalidUserid(t *testing.T) {
-	return
+// Test getUserSubmissions, submissions cached
+func TestGetUserSubmissions(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
-	problems := GetUnsolvedProblemsCPBook("0")
-	if len(problems) != 0 {
-		t.Fatalf("Expected empty problem list")
+	sub1 := getUserSubmissions(userID)
+	sub2 := getUserSubmissions(userID)
+	if len(sub1) != len(sub2) && sub1[0].SubmissionID != sub2[0].SubmissionID {
+		t.Fatalf("Error submissions not equal")
 	}
 }
 
-// Test GetUnsolvedProblemsCPBook, valid userID
-func TestGetUnsolvedProblemsCPBookValidUserid(t *testing.T) {
-	return
+// Test GetUnsolvedProblemsCPBook
+func TestGetUnsolvedProblemsCPBookOk(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemsCPBook(userID)
-	if len(problems) == 0 {
-		t.Fatalf("Expected problem list")
+	if len(problems) != nUnsolvedProblems {
+		t.Fatalf("Expected %d problems to solve, got %d", nUnsolvedProblems, len(problems))
 	}
 }
 
-// Test GetUnsolvedProblemsCPBook, valid userID
+// Test GetUnsolvedProblemsCPBook, invalid API response
 func TestGetUnsolvedProblemsCPBookInvalidResponse(t *testing.T) {
-	return
-	ts := initAPITestServerInvalid(t, []string{"", ""})
+	ts := initAPITestServerInvalid(t, []string{"[]", ""})
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemsCPBook(userID)
@@ -199,37 +216,34 @@ func TestGetUnsolvedProblemsCPBookInvalidResponse(t *testing.T) {
 
 // Test GetUnsolvedProblems, valid userID
 func TestGetUnsolvedProblemsValidUserid(t *testing.T) {
-	return
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblems(userID)
-	if len(problems) == 0 {
-		t.Fatalf("Expected problem list")
+	if len(problems) != nUnsolvedProblems {
+		t.Fatalf("Expected %d problems to solve, got %d", nUnsolvedProblems, len(problems))
 	}
 }
 
-// Test GetUnsolvedProblemRandom, invalid userID
-func TestGetUnsolvedProblemRandomInvalidUserid(t *testing.T) {
-	return
-	ts := initAPITestServer(t)
-	defer test.CloseServer(ts)
-
-	problems := GetUnsolvedProblemRandom("0")
-	if len(problems) != 0 {
-		t.Fatalf("Expected empty problem list")
-	}
-}
-
-// Test GetUnsolvedProblemRandom, valid userID
-func TestGetUnsolvedProblemRandomValidUserid(t *testing.T) {
-	return
+// Test GetUnsolvedProblemRandom
+func TestGetUnsolvedProblemRandomOk(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemRandom(userID)
-	if len(problems) == 0 {
+	if len(problems) != 1 {
 		t.Fatalf("Expected problem list")
+	}
+}
+
+// Test GetUnsolvedProblemRandom, invalid API response
+func TestGetUnsolvedProblemRandomInvalidResponse(t *testing.T) {
+	ts := initAPITestServerInvalid(t, []string{"[]", ""})
+	defer test.CloseServer(ts)
+
+	problems := GetUnsolvedProblemRandom(userID)
+	if len(problems) != 0 {
+		t.Fatalf("Expected empty problem list")
 	}
 }
 

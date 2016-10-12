@@ -28,6 +28,7 @@ type ProblemInfo struct {
 	Level   int
 	AcRatio int
 	Dacu    int
+	// CPInfo  CPProblem
 }
 
 const (
@@ -57,6 +58,8 @@ func InitAPIServer(url string) {
 
 	// Load list of problems to solve from the CP3 book
 	loadProblemListCP3()
+	// Start Problem cache refresh in background
+	go refreshProblemCache(cacheDurationProblem-time.Minute)
 }
 
 // Load chapter titles and the list of problems to solve from the CP3 book.
@@ -116,9 +119,23 @@ func loadProblemListCP3() {
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
 	println("Done.")
+
 }
 
-// Return problem information (from cache or API)
+// Refresh problem cache in background.
+func refreshProblemCache(duration time.Duration) {
+	for ; ; {
+		timer1 := time.NewTimer(duration)
+	  <-timer1.C
+		println("refreshProblemCache")
+		for _, pID := range problemList {
+			getProblem(pID)
+		}
+	}
+}
+
+// Return problem information from cache first, otherwise from API server.
+// If any error occurs, return empty problem.
 func getProblem(pID int) ProblemInfo {
 	problem, ok := cache["problem"].Get(string(pID))
 	if !ok {
@@ -136,7 +153,7 @@ func getProblem(pID int) ProblemInfo {
 	return problem.(ProblemInfo)
 }
 
-// Call the API to get the user id from the username
+// Call the API to get the user id from the username.
 func GetUserID(username string) (string, error) {
 	// Get userid from cache, if found and valid.
 	// Otherwise, call the API and set the value in the cache
@@ -152,6 +169,8 @@ func GetUserID(username string) (string, error) {
 	return id.(string), nil
 }
 
+// Get user submissions from cache first, otherwise from API server.
+// If any error occurs, return empty array.
 func getUserSubmissions(userid string) []uhunt.APISubmission {
 	if userSubs, ok := cache["submissions"].Get(userid); ok {
 		us := userSubs.(uhunt.APIUserSubmissions)
@@ -176,7 +195,6 @@ func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
 	for _, subm := range submissions {
 		if subm.IsAccepted() {
 			userProblems[subm.ProblemID] = true
-
 		}
 	}
 	// Filter solved problems

@@ -236,6 +236,9 @@ func TestShowProblemsOk(t *testing.T) {
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
 	}
+	if bytes.Index(body, []byte("<h3>1337 problems to go!</h3>")) < 0 {
+		t.Fatal("Expected problems number", string(body))
+	}
 }
 
 // Test show problems, but nothing to solve

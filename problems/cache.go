@@ -7,7 +7,6 @@
 package problems
 
 import (
-	// "errors"
 	"sync"
 	"time"
 )
@@ -44,7 +43,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	}
 
   if item.expiration < time.Now().UnixNano() {
-    delete(c.items, key) 
+    delete(c.items, key)
     return nil, false
   }
 	return item.value, true
