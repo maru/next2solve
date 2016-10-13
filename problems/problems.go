@@ -118,8 +118,8 @@ func loadProblemListCP3() {
 		}
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
+	
 	println("Done.")
-
 }
 
 // Refresh problem cache in background.

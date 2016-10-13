@@ -12,18 +12,85 @@
 	<![endif]-->
   <style>
 @media (max-width:400px){.narrow{display:block} }
+.footer {max-width:400px;border-top:1px #eee solid;margin-top:150px;color:#666;padding:7px;}
+.footer a.github {color:#375EAB;font-size: 16px}
 .error{color:#ff0000;margin:7px}
 input[type=submit]{padding:0 16px;height:36px}
-.lucky{-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;margin:25px 40px;padding:10px;min-width:220px;max-width:400px;background:linear-gradient(124deg,#ff2400,#e81d1d,#e8b71d,#e3e81d,#1de840,#1ddde8,#2b1de8,#dd00f3,#dd00f3);background-size:1800% 1800%;-webkit-animation:rainbow 18s ease infinite;-z-animation:rainbow 18s ease infinite;-o-animation:rainbow 18s ease infinite;animation:rainbow 18s ease infinite}.lucky a{text-decoration:none;font-size:30px;font-weight:700;color:#fff;font-family:proxima-nova,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:uppercase}@-webkit-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@-moz-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@-o-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}
+.lucky{-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;margin:25px 40px;padding:10px;min-width:220px;max-width:400px;background-color:#000;}
+.lucky a{text-decoration:none;font-size:30px;font-weight:700;color:#fff;font-family:proxima-nova,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:uppercase}
+table.problems {
+  /*border: 1px solid #000;*/
+  display: table;
+  border-collapse: separate;
+  border-spacing: 2px;
+  border-color: grey;
+  border-spacing: 0;
+      border-collapse: collapse;
+}
+table.problems thead {
+    display: table-header-group;
+    vertical-align: middle;
+    border-color: inherit;
+}
+table.problems tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    border-color: inherit;
+}
+table.problems tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+}
+table.problems th {
+    text-align: left;
+}
+table.problems>tbody>tr>td, table.problems>tbody>tr>th, table.problems>tfoot>tr>td, table.problems>tfoot>tr>th, table.problems>thead>tr>td, table.problems>thead>tr>th {
+    padding: 8px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+table.problems>thead>tr>th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+}
+table.problems>tbody>tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.rainbow {
+background: linear-gradient(0deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3);
+background-size: 1800% 1800%;
+
+-webkit-animation: rainbow 18s ease infinite;
+-z-animation: rainbow 18s ease infinite;
+-o-animation: rainbow 18s ease infinite;
+  animation: rainbow 18s ease infinite;}
+
+@-webkit-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@-moz-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@-o-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
   </style>
 </head>
 <body>
 <div class="content">
   <center>
-    <h1 style="margin-bottom:0px;">
-      <a href="" style="color:#000;text-decoration:none">Next problem<span class="narrow"> </span>to solve</a>
-    </h1>
-    <small>
-      from <a style="color:#333" href="http://sites.google.com/site/stevenhalim/" target="_blank">Competitive Programming</a> exercises
-    </small>
 {{end}}

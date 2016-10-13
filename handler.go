@@ -21,16 +21,16 @@ type TemplateData struct {
 }
 
 var (
-	templates = template.Must(template.ParseFiles("templates/header.html",
+	funcMap = template.FuncMap{
+	    "inc": func (i int) int { return i + 1 },
+	}
+	templates = template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/header.html",
 		"templates/footer.html", "templates/index.html", "templates/lucky.html",
 		"templates/problems.html"))
 )
 
 // Render page using a template with data
 func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
-	templates, _ = template.ParseFiles("templates/header.html",
-		"templates/footer.html", "templates/index.html", "templates/lucky.html",
-		"templates/problems.html")
 	if err := templates.ExecuteTemplate(w, tmpl, data); err != nil {
 		fmt.Fprintf(w, "Error %v", err)
 	}
