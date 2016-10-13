@@ -186,7 +186,7 @@ func TestRandomProblem(t *testing.T) {
 	}
 
 	if bytes.Index(body, []byte("Error template")) >= 0 {
-		t.Fatal("Unexpected error", string(body))
+		t.Fatal("Unexpected error")
 	}
 }
 
@@ -236,8 +236,8 @@ func TestShowProblemsOk(t *testing.T) {
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
 	}
-	if bytes.Index(body, []byte("<h3>1337 problems to go!</h3>")) < 0 {
-		t.Fatal("Expected problems number", string(body))
+	if bytes.Index(body, []byte("<h2>1337 problems to go!</h2>")) < 0 {
+		t.Fatal("Expected problems number")
 	}
 }
 

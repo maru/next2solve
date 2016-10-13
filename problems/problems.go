@@ -28,7 +28,7 @@ type ProblemInfo struct {
 	Level   int
 	AcRatio int
 	Dacu    int
-	// CPInfo  CPProblem
+	Star       bool
 }
 
 const (
@@ -45,6 +45,11 @@ var (
 	problemList []int
 )
 
+func (p *ProblemInfo) GetChapter() string {
+	c := cpProblems[p.ID].Chapter
+	return cpTitles[c]
+}
+
 // Initialize API server and cache
 func InitAPIServer(url string) {
 	// Set API sever URL
@@ -59,7 +64,7 @@ func InitAPIServer(url string) {
 	// Load list of problems to solve from the CP3 book
 	loadProblemListCP3()
 	// Start Problem cache refresh in background
-	go refreshProblemCache(cacheDurationProblem - time.Minute)
+	go refreshProblemCache(cacheDurationProblem-time.Minute)
 }
 
 // Load chapter titles and the list of problems to solve from the CP3 book.
@@ -102,8 +107,9 @@ func loadProblemListCP3() {
 						continue
 					}
 					// Set problem in cache
+					isStar := problemNumber.(float64) < 0
 					problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
-						p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu}
+						p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, isStar}
 					pID := p.ProblemID
 					cache["problem"].Set(string(pID), problem)
 
@@ -118,15 +124,15 @@ func loadProblemListCP3() {
 		}
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
-
+	sortProblemList()
 	println("Done.")
 }
 
 // Refresh problem cache in background.
 func refreshProblemCache(duration time.Duration) {
-	for {
+	for ; ; {
 		timer1 := time.NewTimer(duration)
-		<-timer1.C
+	  <-timer1.C
 		for _, pID := range problemList {
 			getProblem(pID)
 		}
@@ -145,7 +151,7 @@ func getProblem(pID int) ProblemInfo {
 		}
 		// Set problem in cache
 		problem = ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
-			p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu}
+			p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
 		pID := p.ProblemID
 		cache["problem"].Set(string(pID), problem)
 	}
