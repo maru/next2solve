@@ -15,14 +15,14 @@ import (
 
 //
 const (
-	nCP3BookProblems = 1655
-	nCP3BookTitles   = 213
+	nCP3BookProblems  = 1655
+	nCP3BookTitles    = 213
 	nUnsolvedProblems = 1337
-	problemID = 1998
-	problemNumber = 11057
-	problemTitle = "Exact Sum"
-	userID   = "46232"
-	username = "chicapi"
+	problemID         = 1998
+	problemNumber     = 11057
+	problemTitle      = "Exact Sum"
+	userID            = "46232"
+	username          = "chicapi"
 )
 
 var (

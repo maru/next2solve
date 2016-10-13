@@ -42,10 +42,10 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-  if item.expiration < time.Now().UnixNano() {
-    delete(c.items, key)
-    return nil, false
-  }
+	if item.expiration < time.Now().UnixNano() {
+		delete(c.items, key)
+		return nil, false
+	}
 	return item.value, true
 }
 

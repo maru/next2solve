@@ -59,7 +59,7 @@ func InitAPIServer(url string) {
 	// Load list of problems to solve from the CP3 book
 	loadProblemListCP3()
 	// Start Problem cache refresh in background
-	go refreshProblemCache(cacheDurationProblem-time.Minute)
+	go refreshProblemCache(cacheDurationProblem - time.Minute)
 }
 
 // Load chapter titles and the list of problems to solve from the CP3 book.
@@ -118,16 +118,15 @@ func loadProblemListCP3() {
 		}
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
-	
+
 	println("Done.")
 }
 
 // Refresh problem cache in background.
 func refreshProblemCache(duration time.Duration) {
-	for ; ; {
+	for {
 		timer1 := time.NewTimer(duration)
-	  <-timer1.C
-		println("refreshProblemCache")
+		<-timer1.C
 		for _, pID := range problemList {
 			getProblem(pID)
 		}

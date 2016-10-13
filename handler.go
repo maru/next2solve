@@ -22,7 +22,7 @@ type TemplateData struct {
 
 var (
 	funcMap = template.FuncMap{
-	    "inc": func (i int) int { return i + 1 },
+		"inc": func(i int) int { return i + 1 },
 	}
 	templates = template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/header.html",
 		"templates/footer.html", "templates/index.html", "templates/lucky.html",

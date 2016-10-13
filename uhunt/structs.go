@@ -66,7 +66,7 @@ type APIProblem struct {
 func (p *APIProblem) GetLevel() int {
 	dacuLog := math.Log(float64(p.Dacu) + 1)
 	maxLevel := math.Floor(math.Min(10, dacuLog))
-	level := math.Max(1, 10 - maxLevel)
+	level := math.Max(1, 10-maxLevel)
 	ret := int(level)
 	return ret
 }
@@ -77,7 +77,7 @@ func (p *APIProblem) GetAcceptanceRatio() int {
 	if total <= 0 {
 		return 0
 	}
-	return (p.NumAccepted * 100.0)/total
+	return (p.NumAccepted * 100.0) / total
 }
 
 // Get total number of submissions
