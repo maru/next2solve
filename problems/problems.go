@@ -151,9 +151,9 @@ func refreshProblemCache(duration time.Duration) {
 				problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
 					p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
 				pID := p.ProblemID
-				log.Println("Refresh cache problem", pID)
 				cache["problem"].Set(string(pID), problem)
 			}
+			log.Println("Refresh cache done")			
 		}
 	}
 }
