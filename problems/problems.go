@@ -8,6 +8,7 @@ package problems
 
 import (
 	"errors"
+	"log"
 	"math"
 	"math/rand"
 	"next2solve/uhunt"
@@ -28,7 +29,7 @@ type ProblemInfo struct {
 	Level   int
 	AcRatio int
 	Dacu    int
-	Star       bool
+	Star    bool
 }
 
 const (
@@ -38,11 +39,12 @@ const (
 )
 
 var (
-	apiServer   uhunt.APIServer
-	cache       map[string]*Cache
-	cpProblems  map[int]CPProblem
-	cpTitles    map[int]string
-	problemList []int
+	apiServer        uhunt.APIServer
+	cache            map[string]*Cache
+	cpProblems       map[int]CPProblem
+	cpTitles         map[int]string
+	problemList      []int
+	quitRefreshCache chan bool
 )
 
 func (p *ProblemInfo) GetChapter() string {
@@ -61,19 +63,21 @@ func InitAPIServer(url string) {
 	cache["submissions"] = NewCache(cacheDurationSubmissions)
 	cache["problem"] = NewCache(cacheDurationProblem)
 
+	quitRefreshCache = make(chan bool)
+
 	// Load list of problems to solve from the CP3 book
 	loadProblemListCP3()
 	// Start Problem cache refresh in background
-	go refreshProblemCache(cacheDurationProblem-time.Minute)
+	go refreshProblemCache(cacheDurationProblem - time.Minute)
 }
 
 // Load chapter titles and the list of problems to solve from the CP3 book.
 func loadProblemListCP3() {
-	println("Loading problems...")
+	log.Println("Loading problems...")
 	// Get problem list of CP3 book
 	cpBook, err := apiServer.GetProblemListCPbook(3)
 	if err != nil {
-		println("Error: couldn't load CP3 problem list from API")
+		log.Println("Error: couldn't load CP3 problem list from API")
 		return
 	}
 	// Initialize
@@ -103,7 +107,7 @@ func loadProblemListCP3() {
 					pNum := int(math.Abs(problemNumber.(float64)))
 					p, err := apiServer.GetProblemByNum(pNum)
 					if err != nil {
-						println("Error: couldn't load problem ", pNum, ":", err.Error())
+						log.Println("Error: couldn't load problem ", pNum, ":", err.Error())
 						continue
 					}
 					// Set problem in cache
@@ -125,16 +129,31 @@ func loadProblemListCP3() {
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
 	sortProblemList()
-	println("Done.")
+	log.Println("Done.")
 }
 
 // Refresh problem cache in background.
 func refreshProblemCache(duration time.Duration) {
-	for ; ; {
-		timer1 := time.NewTimer(duration)
-	  <-timer1.C
-		for _, pID := range problemList {
-			getProblem(pID)
+	for {
+		select {
+		case <-quitRefreshCache:
+			return
+		default:
+			timer1 := time.NewTimer(duration)
+			<-timer1.C
+			for _, pID := range problemList {
+				p, err := apiServer.GetProblemByID(pID)
+				if err != nil {
+					log.Println("Error: couldn't load problem ID", pID, ":", err.Error())
+					continue
+				}
+				// Set problem in cache
+				problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
+					p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
+				pID := p.ProblemID
+				log.Println("Refresh cache problem", pID)
+				cache["problem"].Set(string(pID), problem)
+			}
 		}
 	}
 }
@@ -146,7 +165,7 @@ func getProblem(pID int) ProblemInfo {
 	if !ok {
 		p, err := apiServer.GetProblemByID(pID)
 		if err != nil {
-			println("Error: couldn't load problem ID", pID, ":", err.Error())
+			log.Println("Error: couldn't load problem ID", pID, ":", err.Error())
 			return ProblemInfo{}
 		}
 		// Set problem in cache
@@ -209,6 +228,7 @@ func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
 			unsolved = append(unsolved, getProblem(pID))
 		}
 	}
+	log.Printf("Get %d problems for user %s\n", len(unsolved), userid)
 	return unsolved
 }
 

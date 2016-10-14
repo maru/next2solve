@@ -11,6 +11,7 @@ import (
 	test "next2solve/testing"
 	"os"
 	"testing"
+	"time"
 )
 
 //
@@ -21,6 +22,7 @@ const (
 	problemID         = 1998
 	problemNumber     = 11057
 	problemTitle      = "Exact Sum"
+	chapterTitle      = "Problem Solving Paradigms"
 	userID            = "46232"
 	username          = "chicapi"
 )
@@ -75,11 +77,33 @@ func TestInitAPIServer(t *testing.T) {
 	}
 }
 
+// Test get chapter name of a problem. Problem list must be loaded in previous
+// test
+func TestGetChapter(t *testing.T) {
+	p := ProblemInfo{problemID, problemNumber, problemTitle, 0, 0, 0, false}
+	if p.GetChapter() != chapterTitle {
+		t.Fatalf("Expected %s, got %s", chapterTitle, p.GetChapter())
+	}
+}
+
 // Test load problem list from CP3 book, but API server sends empty or invalid
 // response.
-func TestLoadProblemListCP3InvalidResponse(t *testing.T) {
-	ts := initAPITestServerInvalid(t, []string{"[]"})
+func TestLoadProblemListCP3EmptyInvalidResponse(t *testing.T) {
+	ts := initAPITestServerInvalid(t, []string{"[]", ""})
 	defer test.CloseServer(ts)
+
+	if len(cpProblems) != 0 {
+		t.Fatalf("Expected %d problems", 0)
+	}
+	if len(cpTitles) != 0 {
+		t.Fatalf("Expected %d titles", 0)
+	}
+	if len(problemList) != 0 {
+		t.Fatalf("Expected %d problems, got %d", 0, len(problemList))
+	}
+
+	// Invalid response
+	loadProblemListCP3()
 
 	if len(cpProblems) != 0 {
 		t.Fatalf("Expected %d problems", 0)
@@ -106,6 +130,27 @@ func TestLoadProblemListCP3(t *testing.T) {
 	if len(problemList) != nCP3BookProblems {
 		t.Fatalf("Expected %d problems, got %d", nCP3BookProblems, len(problemList))
 	}
+}
+
+func TestRefreshProblemCache(t *testing.T) {
+	ts := test.InitAPITestServer(t)
+	defer test.CloseServer(ts)
+
+	// InitAPIServer
+	apiServer.Init(ts.URL)
+	// Create cache for each type of object
+	cache = make(map[string]*Cache)
+	cache["userid"] = NewCache(cacheDurationUser)
+	cache["submissions"] = NewCache(cacheDurationSubmissions)
+	cache["problem"] = NewCache(time.Second)
+
+	// Load list of problems to solve from the CP3 book
+	loadProblemListCP3()
+
+	go refreshProblemCache(time.Second)
+	time.Sleep(3 * time.Second)
+	// Quit refreshProblemCache
+	quitRefreshCache <- true
 }
 
 // Test get problem information, invalid problem ID
