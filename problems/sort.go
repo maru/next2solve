@@ -29,6 +29,8 @@ func (a ProblemList) Less(i, j int) bool {
 	qID := a[j]
 	p := getProblem(pID)
 	q := getProblem(qID)
+	cpP := cpProblems[pID]
+	cpQ := cpProblems[qID]
 	if p.Star && !q.Star {
 		return true
 	}
@@ -39,6 +41,12 @@ func (a ProblemList) Less(i, j int) bool {
 		return true
 	}
 	if p.Level > q.Level {
+		return false
+	}
+	if cpP.Chapter < cpQ.Chapter {
+		return true
+	}
+	if cpP.Chapter > cpQ.Chapter {
 		return false
 	}
 	if p.AcRatio > q.AcRatio {
