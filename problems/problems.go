@@ -153,7 +153,6 @@ func refreshProblemCache(duration time.Duration) {
 				pID := p.ProblemID
 				cache["problem"].Set(string(pID), problem)
 			}
-			log.Println("Refresh cache done")			
 		}
 	}
 }
