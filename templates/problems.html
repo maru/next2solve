@@ -15,6 +15,7 @@
             <th>#</th>
             <th>Number</th>
             <th>Title</th>
+            <th style="text-align: center">Category</th>
             <th>Level</th>
             <th>AC Ratio</th>
           </tr></thead>
@@ -28,6 +29,7 @@
                 {{$p.Title}}</a>
               {{if $p.Star}}*{{end}}
             </td>
+            <td style="text-align: center">{{$p.GetChapter}}</td>
             <td style="text-align: center">{{$p.Level}}</td>
             <td style="text-align: center">{{$p.AcRatio}}%</td>
           </tr>
