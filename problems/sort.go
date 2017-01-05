@@ -68,7 +68,6 @@ func (a ProblemListStar) Less(i, j int) bool {
 	return pID < qID
 }
 
-
 type ProblemListCategory ProblemList
 
 // Return problem list length

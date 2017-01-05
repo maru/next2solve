@@ -84,7 +84,7 @@ func TestInvalidUsername(t *testing.T) {
 	defer test.CloseServer(api)
 
 	invalidUsername := "not_" + username
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}, "show-problems":{"ok"}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}, "show-problems": {"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestValidUser(t *testing.T) {
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems":{"ok"}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems": {"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}

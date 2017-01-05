@@ -14,15 +14,14 @@ import (
 )
 
 type TemplateData struct {
-	UsernameError string
-	UserID        string
-	Username      string
-	Problems      []problems.ProblemInfo
-	IsOrderStar		bool
+	UsernameError   string
+	UserID          string
+	Username        string
+	Problems        []problems.ProblemInfo
+	IsOrderStar     bool
 	IsOrderCategory bool
-	IsOrderLevel bool
+	IsOrderLevel    bool
 }
-
 
 var (
 	funcMap = template.FuncMap{
@@ -31,6 +30,7 @@ var (
 	templates = template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/header.html",
 		"templates/footer.html", "templates/index.html", "templates/lucky.html",
 		"templates/problems.html"))
+	serverUrl = "https://s106.net/next2solve"
 )
 
 // Render page using a template with data
@@ -44,7 +44,7 @@ func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 func showProblems(w http.ResponseWriter, data TemplateData, orderBy string) {
 	data.Problems = problems.GetUnsolvedProblems(data.UserID, orderBy)
 	if len(data.Problems) == 0 {
-		data = TemplateData{UsernameError: "No problems to solve", Username : data.Username}
+		data = TemplateData{UsernameError: "No problems to solve", Username: data.Username}
 		renderPage(w, "index", data)
 		return
 	}
@@ -77,7 +77,6 @@ func setTemplateData(username string) (TemplateData, error) {
 
 // Handles requests
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.String()
 	// Favicon not handled!
 	if r.URL.String() == "/favicon.ico" {
 		return
@@ -89,11 +88,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		username := r.PostFormValue("username")
 		if r.PostFormValue("show-problems") != "" {
 			// Show all unsolved problems
-			http.Redirect(w, r, url + "?all&u=" + username + "&o=star", http.StatusFound)
+			http.Redirect(w, r, serverUrl+"?all&u="+username+"&o=star", http.StatusFound)
 
 		} else if r.PostFormValue("feeling-lucky") != "" {
 			// Show a random unsolved problem
-			http.Redirect(w, r, url + "?lucky&u=" + username, http.StatusFound)
+			http.Redirect(w, r, serverUrl+"?lucky&u="+username, http.StatusFound)
 
 		} else {
 			// Option not available...
@@ -120,9 +119,12 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				orderBy = query["o"][0]
 			}
 			switch orderBy {
-				case "star": data.IsOrderStar = true
-				case "cat": data.IsOrderCategory = true
-				case "lev": data.IsOrderLevel = true
+			case "star":
+				data.IsOrderStar = true
+			case "cat":
+				data.IsOrderCategory = true
+			case "lev":
+				data.IsOrderLevel = true
 			}
 
 			// Show all unsolved problems
