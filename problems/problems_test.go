@@ -242,7 +242,7 @@ func TestGetUnsolvedProblemsCPBookOk(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
-	problems := GetUnsolvedProblemsCPBook(userID)
+	problems := GetUnsolvedProblemsCPBook(userID, "star")
 	if len(problems) != nUnsolvedProblems {
 		t.Fatalf("Expected %d problems to solve, got %d", nUnsolvedProblems, len(problems))
 	}
@@ -253,7 +253,7 @@ func TestGetUnsolvedProblemsCPBookInvalidResponse(t *testing.T) {
 	ts := initAPITestServerInvalid(t, []string{"[]", ""})
 	defer test.CloseServer(ts)
 
-	problems := GetUnsolvedProblemsCPBook(userID)
+	problems := GetUnsolvedProblemsCPBook(userID, "star")
 	if len(problems) != 0 {
 		t.Fatalf("Expected empty problem list")
 	}
@@ -264,7 +264,7 @@ func TestGetUnsolvedProblemsValidUserid(t *testing.T) {
 	ts := initAPITestServer(t)
 	defer test.CloseServer(ts)
 
-	problems := GetUnsolvedProblems(userID)
+	problems := GetUnsolvedProblems(userID, "star")
 	if len(problems) != nUnsolvedProblems {
 		t.Fatalf("Expected %d problems to solve, got %d", nUnsolvedProblems, len(problems))
 	}

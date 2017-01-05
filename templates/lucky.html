@@ -1,19 +1,15 @@
 {{define "lucky"}}
 {{template "header" .}}
-    <div>
-      <h1 class="main-title">
-        <a href="">Next problem<span class="narrow"> </span>to solve:</a>
-      </h1>
-      <small>
-        from <a style="color:#333" href="http://sites.google.com/site/stevenhalim/" target="_blank">Competitive Programming 3</a> exercises
-      </small>
-      <div class="lucky rainbow">{{ $p := index .Problems 0}}
+      <div style="display:flex; justify-content:center; align-items:center; width:400px; height:100px;" class="lucky rainbow">{{ $p := index .Problems 0}}
         <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">
-          {{$p.Number}} -<span class="narrowx"> </span>{{$p.Title}}
+          {{$p.Number}}{{if $p.Star}}*{{end}}
+          - {{$p.Title}}
         </a>
       </div>
-    	<p>Level {{$p.Level}} -
-      AC Ratio: {{$p.AcRatio}}%</p>
+    	<p>
+        Level {{$p.Level}} -
+        AC Ratio: {{$p.AcRatio}}%
+      </p>
 
       <form method="POST" action="">
         <div style="margin-top:90px;">
@@ -27,6 +23,5 @@
         <input type="submit" name="show-problems" value="Show all problems">
         <input type="submit" name="feeling-lucky" value="Feeling lucky!">
       </form>
-    </div>
 {{template "footer" .}}
 {{end}}

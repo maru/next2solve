@@ -11,15 +11,18 @@
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
   <style>
-   h1, h2 { margin-bottom:0px; }
-   .main-title a {color:#000;text-decoration:none;}
+body{font-family:Arial;}
+h1, h2 { margin-bottom:0px; }
+.main-title a {color:#000;text-decoration:none;}
 @media (max-width:400px){.narrow{display:block} }
 .footer {max-width:400px;border-top:1px #eee solid;margin-top:150px;color:#666;padding:7px;}
-.footer a.github {color:#375EAB;font-size: 16px}
+.footer a.github {color:#375EAB;font-size: 13.3px}
 .error{color:#ff0000;margin:7px}
 input[type=submit]{padding:0 16px;height:36px}
 .lucky{-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;margin:25px 40px;padding:10px;min-width:220px;max-width:400px;background-color:#000;}
 .lucky a{text-decoration:none;font-size:30px;font-weight:700;color:#fff;font-family:proxima-nova,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:uppercase}
+input#username {text-align:center;margin-bottom:10px;height:20px;width:200px;}
+.username{color:#C70039; font-size: 110%}
 table.problems {
   margin-top:10px;
   display: table;
@@ -27,8 +30,9 @@ table.problems {
   border-spacing: 2px;
   border-color: grey;
   border-spacing: 0;
-      border-collapse: collapse;
+  border-collapse: collapse;
 }
+@media (min-width:900px){table.problems {width: 900px;}}
 table.problems thead {
     display: table-header-group;
     vertical-align: middle;
@@ -44,9 +48,9 @@ table.problems tr {
     vertical-align: inherit;
     border-color: inherit;
 }
-table.problems th {
-    text-align: left;
-}
+table.problems th { text-align: left;}
+table.problems th a { text-decoration:none; color:#000;}
+table.problems th a { text-decoration:underline; color:#000080;}
 table.problems>tbody>tr>td, table.problems>tbody>tr>th, table.problems>tfoot>tr>td, table.problems>tfoot>tr>th, table.problems>thead>tr>td, table.problems>thead>tr>th {
     padding: 8px;
     line-height: 1.42857143;
@@ -60,39 +64,18 @@ table.problems>thead>tr>th {
 table.problems>tbody>tr:nth-of-type(odd) {
     background-color: #f9f9f9;
 }
-
-.rainbow {
-background: linear-gradient(0deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3);
-background-size: 1800% 1800%;
-
--webkit-animation: rainbow 18s ease infinite;
--z-animation: rainbow 18s ease infinite;
--o-animation: rainbow 18s ease infinite;
-  animation: rainbow 18s ease infinite;}
-
-@-webkit-keyframes rainbow {
-    0%{background-position:0% 82%}
-    50%{background-position:100% 19%}
-    100%{background-position:0% 82%}
-}
-@-moz-keyframes rainbow {
-    0%{background-position:0% 82%}
-    50%{background-position:100% 19%}
-    100%{background-position:0% 82%}
-}
-@-o-keyframes rainbow {
-    0%{background-position:0% 82%}
-    50%{background-position:100% 19%}
-    100%{background-position:0% 82%}
-}
-@keyframes rainbow {
-    0%{background-position:0% 82%}
-    50%{background-position:100% 19%}
-    100%{background-position:0% 82%}
-}
+.rainbow-text{background-image:-webkit-gradient(linear,left top,right bottom,color-stop(0,#f22),color-stop(.15,#f2f),color-stop(.3,#22f),color-stop(.45,#2ff),color-stop(.6,#2f2),color-stop(.75,#2f2),color-stop(.9,#ff2),color-stop(1,#f22));background-image:gradient(linear,left top,right bottom,color-stop(0,#f22),color-stop(.15,#f2f),color-stop(.3,#22f),color-stop(.45,#2ff),color-stop(.6,#2f2),color-stop(.75,#2f2),color-stop(.9,#ff2),color-stop(1,#f22));color:transparent;-webkit-background-clip:text;background-clip:text}
+.rainbow{background:linear-gradient(0deg,#ff2400,#e81d1d,#e8b71d,#e3e81d,#1de840,#1ddde8,#2b1de8,#dd00f3,#dd00f3);background-size:1800% 1800%;-webkit-animation:rainbow 18s ease infinite;-z-animation:rainbow 18s ease infinite;-o-animation:rainbow 18s ease infinite;animation:rainbow 18s ease infinite}@-webkit-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@-moz-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@-o-keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}@keyframes rainbow{0%,100%{background-position:0 82%}50%{background-position:100% 19%}}
   </style>
 </head>
 <body>
 <div class="content">
   <center>
+    <h1 class="main-title">
+      <a href="/">Next problem<span class="narrow"> </span>to solve</a>
+    </h1>
+    <small>
+      selection of <a href="https://uva.onlinejudge.org/" target="_blank">UVa</a>
+      problems provided by <a style="color:#333" href="http://uhunt.felix-halim.net/" target="_blank">uHunt</a>
+    </small>
 {{end}}

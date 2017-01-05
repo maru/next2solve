@@ -1,11 +1,5 @@
 {{define "index"}}
 {{template "header" .}}
-    <h1 class="main-title">
-      <a href="">Next problem<span class="narrow"> </span>to solve</a>
-    </h1>
-    <small>
-      from <a style="color:#333" href="http://sites.google.com/site/stevenhalim/" target="_blank">Competitive Programming 3</a> exercises
-    </small>
     <form method="POST" action="">
       <div style="margin-top:90px;">
         <div class="logo-subtext">Enter your <a href="https://uva.onlinejudge.org" target="_blank">UVa</a> username:</div>
@@ -13,7 +7,7 @@
       <div class="error">{{.UsernameError}}</div>
       <div>
         <input type="hidden" name="userid" value="{{.UserID}}">
-        <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off" style="text-align:center;margin-bottom:10px;height:20px;width:200px;">
+        <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off">
       </div>
       <input type="submit" name="show-problems" value="Show all problems">
       <input type="submit" name="feeling-lucky" value="Feeling lucky!">

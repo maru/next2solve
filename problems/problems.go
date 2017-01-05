@@ -52,6 +52,11 @@ func (p *ProblemInfo) GetChapter() string {
 	return cpTitles[c]
 }
 
+func (p *ProblemInfo) GetSubchapter() string {
+	c := cpProblems[p.ID].Subchapter
+	return cpTitles[c]
+}
+
 // Initialize API server and cache
 func InitAPIServer(url string) {
 	// Set API sever URL
@@ -128,7 +133,7 @@ func loadProblemListCP3() {
 		}
 	}
 	// Sort problemList by star first, level asc, acratio desc, dacu desc
-	sortProblemList()
+	sortProblemList(problemList, "star")
 	log.Println("Done.")
 }
 
@@ -210,7 +215,7 @@ func getUserSubmissions(userid string) []uhunt.APISubmission {
 // Get the unsolved problems, sort by level and acceptance ratio (desc).
 // Calls the API to get the problem list (from the CP3 book), the details of
 // each problem and the submissions by the user.
-func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
+func GetUnsolvedProblemsCPBook(userid string, orderBy string) []ProblemInfo {
 
 	// Get only accepted (distinct) problems
 	userProblems := make(map[int]bool)
@@ -221,24 +226,30 @@ func GetUnsolvedProblemsCPBook(userid string) []ProblemInfo {
 		}
 	}
 	// Filter solved problems
-	var unsolved []ProblemInfo
+	var unsolved []int
 	for _, pID := range problemList {
 		if _, ok := userProblems[pID]; !ok {
-			unsolved = append(unsolved, getProblem(pID))
+			unsolved = append(unsolved, pID)
 		}
 	}
-	log.Printf("Get %d problems for user %s\n", len(unsolved), userid)
-	return unsolved
+	// Sort problems by user order
+	sortProblemList(unsolved, orderBy)
+
+	var unsolvedList []ProblemInfo
+	for _, pID := range unsolved {
+		unsolvedList = append(unsolvedList, getProblem(pID))
+	}
+	return unsolvedList
 }
 
-func GetUnsolvedProblems(userid string) []ProblemInfo {
-	return GetUnsolvedProblemsCPBook(userid)
+func GetUnsolvedProblems(userid string, orderBy string) []ProblemInfo {
+	return GetUnsolvedProblemsCPBook(userid, orderBy)
 }
 
 // Get the unsolved problems by GetUnsolvedProblems and return one random problem.
 func GetUnsolvedProblemRandom(userid string) []ProblemInfo {
 	// Choose a problem with lowest dacu, starred first
-	unsolved := GetUnsolvedProblems(userid)
+	unsolved := GetUnsolvedProblems(userid, "")
 	if len(unsolved) > 0 {
 		r := rand.Intn(len(unsolved))
 		return []ProblemInfo{unsolved[r]}

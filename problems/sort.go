@@ -22,49 +22,127 @@ func (a ProblemList) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
-// Compare two elements of problem list:
-// Sort problemList by star first, level asc, acratio desc, dacu desc
 func (a ProblemList) Less(i, j int) bool {
+	pID := a[i]
+	qID := a[j]
+	return pID < qID
+}
+
+type ProblemListStar ProblemList
+
+// Return problem list length
+func (a ProblemListStar) Len() int {
+	return len(a)
+}
+
+// Swap two elements of problem list
+func (a ProblemListStar) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+// Compare two elements of problem list:
+// Sort ProblemListStar by star first, level asc, acratio desc, dacu desc
+func (a ProblemListStar) Less(i, j int) bool {
 	pID := a[i]
 	qID := a[j]
 	p := getProblem(pID)
 	q := getProblem(qID)
 	cpP := cpProblems[pID]
 	cpQ := cpProblems[qID]
-	if p.Star && !q.Star {
-		return true
+
+	if p.Star != q.Star {
+		return p.Star && !q.Star
 	}
-	if !p.Star && q.Star {
-		return false
+	if p.Level != q.Level {
+		return p.Level < q.Level
 	}
-	if p.Level < q.Level {
-		return true
+	if cpP.Chapter != cpQ.Chapter {
+		return cpP.Chapter < cpQ.Chapter
 	}
-	if p.Level > q.Level {
-		return false
+	if p.AcRatio != q.AcRatio {
+		return p.AcRatio > q.AcRatio
 	}
-	if cpP.Chapter < cpQ.Chapter {
-		return true
+	if p.Dacu != q.Dacu {
+		return p.Dacu > q.Dacu
 	}
-	if cpP.Chapter > cpQ.Chapter {
-		return false
+	return pID < qID
+}
+
+
+type ProblemListCategory ProblemList
+
+// Return problem list length
+func (a ProblemListCategory) Len() int {
+	return len(a)
+}
+
+// Swap two elements of problem list
+func (a ProblemListCategory) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+// Compare two elements of problem list:
+// Sort ProblemListCategory by chapter, level asc, star, acratio desc, dacu desc
+func (a ProblemListCategory) Less(i, j int) bool {
+	pID := a[i]
+	qID := a[j]
+	p := getProblem(pID)
+	q := getProblem(qID)
+	cpP := cpProblems[pID]
+	cpQ := cpProblems[qID]
+
+	if cpP.Chapter != cpQ.Chapter {
+		return cpP.Chapter < cpQ.Chapter
 	}
-	if p.AcRatio > q.AcRatio {
-		return true
+	if p.Level != q.Level {
+		return p.Level < q.Level
 	}
-	if p.AcRatio < q.AcRatio {
-		return false
+	if p.Star != q.Star {
+		return p.Star && !q.Star
 	}
-	if p.Dacu > q.Dacu {
-		return true
+	if p.Dacu != q.Dacu {
+		return p.Dacu > q.Dacu
 	}
-	if p.Dacu < q.Dacu {
-		return false
+	return pID < qID
+}
+
+type ProblemListLevel ProblemList
+
+// Return problem list length
+func (a ProblemListLevel) Len() int {
+	return len(a)
+}
+
+// Swap two elements of problem list
+func (a ProblemListLevel) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+// Compare two elements of problem list:
+// Sort ProblemListCategory by level asc, star, chapter, acratio desc, dacu desc
+func (a ProblemListLevel) Less(i, j int) bool {
+	pID := a[i]
+	qID := a[j]
+	p := getProblem(pID)
+	q := getProblem(qID)
+
+	if p.Level != q.Level {
+		return p.Level < q.Level
 	}
-	return a[i] < a[j]
+	if p.Dacu != q.Dacu {
+		return p.Dacu > q.Dacu
+	}
+	return pID < qID
 }
 
 // Sort problem list
-func sortProblemList() {
-	sort.Sort(ProblemList(problemList))
+func sortProblemList(problemList []int, orderBy string) {
+	switch orderBy {
+	case "star":
+		sort.Sort(ProblemListStar(problemList))
+	case "cat":
+		sort.Sort(ProblemListCategory(problemList))
+	case "lev":
+		sort.Sort(ProblemListLevel(problemList))
+	}
 }

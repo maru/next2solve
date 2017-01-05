@@ -1,37 +1,53 @@
 {{define "problems"}}
 {{template "header" .}}
-  <h1 class="main-title">
-    <a href="">Next problem<span class="narrow"> </span>to solve</a>
-  </h1>
-  <small>
-  from <a style="color:#333" href="http://sites.google.com/site/stevenhalim/" target="_blank">Competitive Programming 3</a> exercises
-  </small>
     <div style="margin:50px 0px;">
       <div class="problems">
-        <h2>{{len $.Problems}} problems to go!</h2>
-        <small>First showing star (*) problems, ordered by level</small>
+        <h2>
+          <span class="rainbow-text">{{$.Username}}</span>:
+          {{len $.Problems}} problems to go!</h2>
+        <small>
+          {{if .IsOrderStar}}First showing star (*) problems, ordered by Category and Level{{end}}
+          {{if .IsOrderCategory}}Ordered by Category and then Level{{end}}
+          {{if .IsOrderLevel}}Ordered by Level{{end}}
+        </small>
         <table class="problems">
           <thead><tr>
-            <th>#</th>
-            <th>Number</th>
-            <th>Title</th>
-            <th style="text-align: center">Category</th>
-            <th>Level</th>
-            <th>AC Ratio</th>
+            <th style="color:#666">#</th>
+            <th>
+              Problem
+            </th>
+            <th>
+              <a href="?all&u={{$.Username}}&o=star" title="Star problems">*</a>
+            </th>
+            <th style="text-align: center">
+              <a href="?all&u={{$.Username}}&o=cat" title="Category">Category</a>
+            </th>
+            <th>
+              <a href="?all&u={{$.Username}}&o=lev" title="Level">Level</a>
+            </th>
+            <!-- <th>
+              <a href="?all&u={{$.Username}}&o=ac" title="Acceptance Ratio">AC Ratio</a>
+            </th>
+            <th>
+              <a href="?all&u={{$.Username}}&o=dacu" title="Different Accepted Users">DACU</a>
+            </th> -->
           </tr></thead>
           <tbody>{{ range $i, $p := $.Problems }}
           <tr>
-            <td scope="row">{{inc $i}}</td>
-            <td style="text-align: center">{{$p.Number}}</td>
+            <td scope="row" style="color:#666; font-size:80%">{{inc $i}}</td>
+            <td style="text-align: right">{{$p.Number}}</td>
             <td>
+              {{if $p.Star}}*{{end}}
               <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}"
                  target="_blank" title="{{$p.GetChapter}}">
                 {{$p.Title}}</a>
-              {{if $p.Star}}*{{end}}
             </td>
-            <td style="text-align: center">{{$p.GetChapter}}</td>
+            <td style="text-align: center">
+              <span title="{{$p.GetSubchapter}}">{{$p.GetChapter}}</span>
+            </td>
             <td style="text-align: center">{{$p.Level}}</td>
-            <td style="text-align: center">{{$p.AcRatio}}%</td>
+            <!-- <td style="text-align: center; font-size:90%">{{$p.AcRatio}}%</td>
+            <td style="text-align: center; font-size:80%">{{$p.Dacu}}</td> -->
           </tr>
         {{ end }}</tbody>
         </table>

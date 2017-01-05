@@ -18,7 +18,11 @@ type TemplateData struct {
 	UserID        string
 	Username      string
 	Problems      []problems.ProblemInfo
+	IsOrderStar		bool
+	IsOrderCategory bool
+	IsOrderLevel bool
 }
+
 
 var (
 	funcMap = template.FuncMap{
@@ -37,13 +41,14 @@ func renderPage(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 // Show unsolved problems
-func showProblems(w http.ResponseWriter, data TemplateData) {
-	data.Problems = problems.GetUnsolvedProblems(data.UserID)
+func showProblems(w http.ResponseWriter, data TemplateData, orderBy string) {
+	data.Problems = problems.GetUnsolvedProblems(data.UserID, orderBy)
 	if len(data.Problems) == 0 {
-		data = TemplateData{"No problems to solve", "", data.Username, nil}
+		data = TemplateData{UsernameError: "No problems to solve", Username : data.Username}
 		renderPage(w, "index", data)
 		return
 	}
+	log.Printf("Get %d problems for user %s\n", len(data.Problems), data.Username)
 	renderPage(w, "problems", data)
 }
 
@@ -52,61 +57,78 @@ func showRandomProblem(w http.ResponseWriter, data TemplateData) {
 	// Choose a problem with lowest dacu, starred first
 	data.Problems = problems.GetUnsolvedProblemRandom(data.UserID)
 	if len(data.Problems) == 0 {
-		data = TemplateData{"No problems to solve", "", data.Username, nil}
+		data = TemplateData{UsernameError: "No problems to solve", Username: data.Username}
 		renderPage(w, "index", data)
 		return
 	}
 	renderPage(w, "lucky", data)
 }
 
-// Get user information from cookies
-func getTemplateData(r *http.Request) TemplateData {
-	data := TemplateData{}
-	if cookie, err := r.Cookie("userid"); err == nil {
-		data.UserID = cookie.Value
+// Set template data
+func setTemplateData(username string) (TemplateData, error) {
+	// Check if username is valid
+	userid, err := problems.GetUserID(username)
+	if err != nil {
+		return TemplateData{UsernameError: err.Error(), Username: username}, err
 	}
-	if cookie, err := r.Cookie("username"); err == nil {
-		data.Username = cookie.Value
-	}
-	return data
-}
-
-// Set user information in cookies
-func setTemplateData(w http.ResponseWriter, data *TemplateData, userid, username string) {
-	if data.UserID != userid {
-		cookie := http.Cookie{Name: "userid", Value: userid}
-		http.SetCookie(w, &cookie)
-		data.UserID = userid
-	}
-	if data.Username != username {
-		cookie := http.Cookie{Name: "username", Value: username}
-		http.SetCookie(w, &cookie)
-		data.Username = username
-	}
+	// Set user data
+	return TemplateData{UserID: userid, Username: username}, nil
 }
 
 // Handles requests
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	data := getTemplateData(r)
+	// Favicon not handled!
+	if r.URL.String() == "/favicon.ico" {
+		return
+	}
+
+	// POST request
 	if r.Method == "POST" {
-		// Show problems to solve
+		// Get username
 		username := r.PostFormValue("username")
-		// Check if username is valid
-		userid, err := problems.GetUserID(username)
+		if r.PostFormValue("show-problems") != "" {
+			// Show all unsolved problems
+			http.Redirect(w, r, "?all&u=" + username + "&o=star", http.StatusFound)
+
+		} else if r.PostFormValue("feeling-lucky") != "" {
+			// Show a random unsolved problem
+			http.Redirect(w, r, "?lucky&u=" + username, http.StatusFound)
+
+		} else {
+			// Option not available...
+			http.NotFound(w, r)
+		}
+		return
+	}
+
+	// GET request
+	query := r.URL.Query()
+
+	// Get username
+	if username, ok := query["u"]; ok && len(username[0]) > 0 {
+		data, err := setTemplateData(username[0])
 		if err != nil {
-			data = TemplateData{err.Error(), "", username, nil}
+			data = TemplateData{UsernameError: err.Error(), Username: username[0]}
 			renderPage(w, "index", data)
 			return
 		}
-		// Set user information in a cookie
-		setTemplateData(w, &data, userid, username)
 
-		// Show all unsolved problems
-		if r.PostFormValue("show-problems") != "" {
+		if _, ok := query["all"]; ok {
+			orderBy := ""
+			if o, ok := query["o"]; ok && len(o) > 0 {
+				orderBy = query["o"][0]
+			}
+			switch orderBy {
+				case "star": data.IsOrderStar = true
+				case "cat": data.IsOrderCategory = true
+				case "lev": data.IsOrderLevel = true
+			}
+
 			// Show all unsolved problems
-			showProblems(w, data)
+			showProblems(w, data, orderBy)
 			return
-		} else {
+		}
+		if _, ok := query["lucky"]; ok {
 			// Show a random unsolved problem
 			showRandomProblem(w, data)
 			return
@@ -114,7 +136,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// GET - Default
-	renderPage(w, "index", data)
+	renderPage(w, "index", TemplateData{})
 }
 
 // Set handlers, initialize API server and start HTTP server

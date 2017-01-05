@@ -84,15 +84,21 @@ func TestInvalidUsername(t *testing.T) {
 	defer test.CloseServer(api)
 
 	invalidUsername := "not_" + username
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {invalidUsername}, "show-problems":{"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	notFoundError := []byte("<div class=\"error\">Username not found</div>")
 	if bytes.Index(body, notFoundError) < 0 {
 		t.Fatal("Expected error 'Username not found'")
@@ -109,10 +115,15 @@ func TestValidUser(t *testing.T) {
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "show-problems":{"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
@@ -120,48 +131,12 @@ func TestValidUser(t *testing.T) {
 	}
 	emtpyError := []byte("<div class=\"error\"></div>")
 	if bytes.Index(body, emtpyError) < 0 {
+		println(string(body))
 		t.Fatal("Expected error empty")
 	}
 	validUserID := "<input type=\"hidden\" name=\"userid\" value=\"" + userid + "\""
 	if bytes.Index(body, []byte(validUserID)) < 0 {
 		t.Fatal("Expected userid", userid, "in input text")
-	}
-}
-
-// Check if the userid and username cookies are set
-func TestSetCookies(t *testing.T) {
-	ts, api := initAPITestServer(t)
-	defer test.CloseServer(ts)
-	defer test.CloseServer(api)
-
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, c := range resp.Cookies() {
-		if c.Name == "userid" && c.Value != userid {
-			t.Fatal("Cookie userid value is not", userid, "(", c.Value, ")")
-		}
-		if c.Name == "username" && c.Value != username {
-			t.Fatal("Cookie username value is not", username, "(", c.Value, ")")
-		}
-	}
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", ts.URL, nil)
-	for _, c := range resp.Cookies() {
-		req.AddCookie(c)
-	}
-	resp, err = client.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, c := range resp.Cookies() {
-		if c.Name == "userid" && c.Value != userid {
-			t.Fatal("Cookie userid value is not", userid, "(", c.Value, ")")
-		}
-		if c.Name == "username" && c.Value != username {
-			t.Fatal("Cookie username value is not", username, "(", c.Value, ")")
-		}
 	}
 }
 
@@ -171,10 +146,15 @@ func TestRandomProblem(t *testing.T) {
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
@@ -196,11 +176,15 @@ func TestRandomProblemEmpty(t *testing.T) {
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
-	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {""}})
-
+	resp, err := http.PostForm(ts.URL, url.Values{"username": {username}, "feeling-lucky": {"ok"}})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 
@@ -209,6 +193,7 @@ func TestRandomProblemEmpty(t *testing.T) {
 	}
 
 	if bytes.Index(body, []byte("<div class=\"error\">No problems to solve</div>")) < 0 {
+		println(string(body))
 		t.Fatalf("Expected no problems")
 	}
 }
@@ -221,9 +206,15 @@ func TestShowProblemsOk(t *testing.T) {
 
 	resp, err := http.PostForm(ts.URL, url.Values{"username": {username},
 		"show-problems": {"Show problems"}})
+
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
@@ -236,7 +227,7 @@ func TestShowProblemsOk(t *testing.T) {
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
 	}
-	if bytes.Index(body, []byte("<h2>1337 problems to go!</h2>")) < 0 {
+	if bytes.Index(body, []byte("1337 problems to go!</h2>")) < 0 {
 		t.Fatal("Expected problems number")
 	}
 }
