@@ -77,6 +77,7 @@ func setTemplateData(username string) (TemplateData, error) {
 
 // Handles requests
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.String()
 	// Favicon not handled!
 	if r.URL.String() == "/favicon.ico" {
 		return
@@ -88,11 +89,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		username := r.PostFormValue("username")
 		if r.PostFormValue("show-problems") != "" {
 			// Show all unsolved problems
-			http.Redirect(w, r, "?all&u=" + username + "&o=star", http.StatusFound)
+			http.Redirect(w, r, url + "?all&u=" + username + "&o=star", http.StatusFound)
 
 		} else if r.PostFormValue("feeling-lucky") != "" {
 			// Show a random unsolved problem
-			http.Redirect(w, r, "?lucky&u=" + username, http.StatusFound)
+			http.Redirect(w, r, url + "?lucky&u=" + username, http.StatusFound)
 
 		} else {
 			// Option not available...
