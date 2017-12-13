@@ -25,12 +25,18 @@
             <th>
               <a href="?all&u={{$.Username}}&o=lev" title="Level">Level</a>
             </th>
-            <!-- <th>
-              <a href="?all&u={{$.Username}}&o=ac" title="Acceptance Ratio">AC Ratio</a>
+            <th style="text-align: center; font-weight:normal; font-size:80%">
+              <a href="?all&u={{$.Username}}&o=sub" title="Number of Submissions">Total<br />Submissions</a>
             </th>
-            <th>
+            <th style="text-align: center; font-weight:normal; font-size:80%">
+              <a href="?all&u={{$.Username}}&o=ac" title="Number of Accepted Submissions">Total<br />AC</a>
+            </th>
+            <th style="text-align: center; font-weight:normal; font-size:80%">
+              <a href="?all&u={{$.Username}}&o=acr" title="Acceptance Ratio">AC %</a>
+            </th>
+            <th style="text-align: center; font-weight:normal; font-size:80%">
               <a href="?all&u={{$.Username}}&o=dacu" title="Different Accepted Users">DACU</a>
-            </th> -->
+            </th>
           </tr></thead>
           <tbody>{{ range $i, $p := $.Problems }}
           <tr>
@@ -46,8 +52,10 @@
               <span title="{{$p.GetSubchapter}}">{{$p.GetChapter}}</span>
             </td>
             <td style="text-align: center">{{$p.Level}}</td>
-            <!-- <td style="text-align: center; font-size:90%">{{$p.AcRatio}}%</td>
-            <td style="text-align: center; font-size:80%">{{$p.Dacu}}</td> -->
+            <td style="text-align: center; font-size:85%">{{$p.TotalSubmissions}}</td>
+            <td style="text-align: center; font-size:85%">{{$p.TotalAccepted}}</td>
+            <td style="text-align: center; font-size:85%">{{$p.AcRatio}}%</td>
+            <td style="text-align: center; font-size:80%">{{$p.Dacu}}</td>
           </tr>
         {{ end }}</tbody>
         </table>

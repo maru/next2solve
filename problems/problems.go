@@ -27,6 +27,8 @@ type ProblemInfo struct {
 	Number  int
 	Title   string
 	Level   int
+  TotalSubmissions int
+  TotalAccepted int
 	AcRatio int
 	Dacu    int
 	Star    bool
@@ -118,7 +120,7 @@ func loadProblemListCP3() {
 					// Set problem in cache
 					isStar := problemNumber.(float64) < 0
 					problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
-						p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, isStar}
+						p.GetLevel(), p.GetTotalSubmissions(), p.NumAccepted, p.GetAcceptanceRatio(), p.Dacu, isStar}
 					pID := p.ProblemID
 					cache["problem"].Set(string(pID), problem)
 
@@ -154,7 +156,7 @@ func refreshProblemCache(duration time.Duration) {
 				}
 				// Set problem in cache
 				problem := ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
-					p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
+					p.GetLevel(), p.GetTotalSubmissions(), p.NumAccepted, p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
 				pID := p.ProblemID
 				cache["problem"].Set(string(pID), problem)
 			}
@@ -174,7 +176,7 @@ func getProblem(pID int) ProblemInfo {
 		}
 		// Set problem in cache
 		problem = ProblemInfo{p.ProblemID, p.ProblemNumber, p.Title,
-			p.GetLevel(), p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
+			p.GetLevel(), p.GetTotalSubmissions(), p.NumAccepted, p.GetAcceptanceRatio(), p.Dacu, cpProblems[p.ProblemID].Star}
 		pID := p.ProblemID
 		cache["problem"].Set(string(pID), problem)
 	}
