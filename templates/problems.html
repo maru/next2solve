@@ -19,7 +19,7 @@
             <th>
               <a href="?all&u={{$.Username}}&o=star" title="Star problems">*</a>
             </th>
-            <th style="text-align: center">
+            <th style="text-align: center; width:209px; ">
               <a href="?all&u={{$.Username}}&o=cat" title="Category">Category</a>
             </th>
             <th>
@@ -49,7 +49,9 @@
                 {{$p.Title}}</a>
             </td>
             <td style="text-align: center">
-              <span title="{{$p.GetSubchapter}}">{{$p.GetChapter}}</span>
+              <span style="font-size:90%">{{$p.GetChapter}}</span><br />
+              <span style="font-size:65%">{{$p.GetSubchapter}}</span><br />
+              <span style="font-size:50%">{{$p.GetSection}}</span>
             </td>
             <td style="text-align: center">{{$p.Level}}</td>
             <td style="text-align: center; font-size:85%">{{$p.TotalSubmissions}}</td>

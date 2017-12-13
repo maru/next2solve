@@ -59,6 +59,11 @@ func (p *ProblemInfo) GetSubchapter() string {
 	return cpTitles[c]
 }
 
+func (p *ProblemInfo) GetSection() string {
+	c := cpProblems[p.ID].Section
+	return cpTitles[c]
+}
+
 // Initialize API server and cache
 func InitAPIServer(url string) {
 	// Set API sever URL
