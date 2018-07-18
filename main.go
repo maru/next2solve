@@ -16,7 +16,7 @@ package main
 import "flag"
 
 func main() {
-	APIUrl := flag.String("api", "http://uhunt.felix-halim.net", "API URL")
+	APIUrl := flag.String("api", "http://uhunt.onlinejudge.org", "API URL")
 	addr := flag.String("addr", ":8002", "listening address")
 	flag.Parse()
 	HttpServerStart(*addr, *APIUrl)
