@@ -9,14 +9,14 @@
 //   -addr string
 //     	listening address (default ":8002")
 //   -api string
-//     	API URL (default "http://uhunt.felix-halim.net")
+//     	API URL (default "https://uhunt.onlinejudge.org")
 
 package main
 
 import "flag"
 
 func main() {
-	APIUrl := flag.String("api", "http://uhunt.onlinejudge.org", "API URL")
+	APIUrl := flag.String("api", "https://uhunt.onlinejudge.org", "API URL")
 	addr := flag.String("addr", ":8002", "listening address")
 	flag.Parse()
 	HttpServerStart(*addr, *APIUrl)

@@ -41,7 +41,7 @@ func initAPITestServerInvalid(t *testing.T, apiServer *APIServer, response strin
 func initAPITestServer(t *testing.T, apiServer *APIServer) *httptest.Server {
 	// Test against the real uHunt API web server
 	if realTest {
-		APIUrl := "http://uhunt.felix-halim.net"
+		APIUrl := "https://uhunt.onlinejudge.org"
 		apiServer.Init(APIUrl)
 		return nil
 	}
@@ -56,7 +56,7 @@ func TestGetUrl(t *testing.T) {
 	ts := initAPITestServer(t, &apiServer)
 	defer test.CloseServer(ts)
 
-	url := "http://uhunt.felix-halim.net"
+	url := "https://uhunt.onlinejudge.org"
 	if ts != nil {
 		url = ts.URL
 	}

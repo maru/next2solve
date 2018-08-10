@@ -43,7 +43,7 @@ func initAPITestServer(t *testing.T) (*httptest.Server, *httptest.Server) {
 	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
 	// Test against the real uHunt API web server
 	if realTest {
-		APIUrl := "http://uhunt.felix-halim.net"
+		APIUrl := "https://uhunt.onlinejudge.org"
 		problems.InitAPIServer(APIUrl)
 		return ts, nil
 	}

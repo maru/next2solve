@@ -1,14 +1,15 @@
-# next2solve
-Next problems to solve:
-selection of [UVa](http://uva.onlinejudge.org/) problems
-provided by the [uHunt](http://uhunt.felix-halim.net/) website.
+# :rocket:  next2solve  :rocket:
+Choose your next [UVa](https://uva.onlinejudge.org/) problem to solve,
+from the exercises proposed in [Competitive Programming](http://sites.google.com/site/stevenhalim/).
 
-## Try it! :smile:
+Try it! :nerd_face: https://next2solve.s106.net/
 
-https://s106.net/next2solve
+## Installation and usage
 
+next2solve is an HTTP server developed in [Go](https://golang.org/) that uses
+the [uHunt API](https://uhunt.onlinejudge.org/) to show your unsolved UVa-CP problems.
 
-## Installation and Usage
+First download and build the code:
 
     mkdir src
     export GOPATH=$(pwd)
@@ -17,12 +18,16 @@ https://s106.net/next2solve
     cd next2solve/
     go build
 
-If you want to use the original uHunt server, you can just run
-(default listening port is 8002):
+Run (default listening port is 8002):
 
-    ./next2solve -port 8002
+    ./next2solve
 
-You can also use a local testing server to provide the uHunt API responses
+You can change the port number with the option -p:
+
+    ./next2solve -p 8080
+
+You can also use a local testing server to provide the uHunt API responses,
+instead of the [uHunt live server](https://uhunt.onlinejudge.org/)
 (see files in `testing` directory):
 
 Terminal 1:

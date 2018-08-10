@@ -1,7 +1,7 @@
 {{define "lucky"}}
 {{template "header" .}}
       <div style="display:flex; justify-content:center; align-items:center; width:400px; height:100px;" class="lucky rainbow">{{ $p := index .Problems 0}}
-        <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">
+        <a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">
           {{$p.Number}}{{if $p.Star}}*{{end}}
           - {{$p.Title}}
         </a>
