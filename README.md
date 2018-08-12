@@ -4,6 +4,8 @@ from the exercises proposed in [Competitive Programming](http://sites.google.com
 
 Try it! :nerd_face: https://next2solve.s106.net/
 
+![](templates/problems.png)
+
 ## Installation and usage
 
 next2solve is an HTTP server developed in [Go](https://golang.org/) that uses
@@ -33,7 +35,7 @@ Usage of ./next2solve:
 
 Finally, open http://localhost:8002/ in your browser.
 
-![](templates/index.png)  ![](templates/problems.png)
+![](templates/index.png)  
 
 
 ## Testing
