@@ -22,17 +22,19 @@ Run (default listening port is 8002):
 
     ./next2solve
 
-Finally, open http://localhost:8002/ in your browser.
-
-![](templates/index.png)
-
 Usage of ./next2solve:
+
     -api string
         API URL (default "https://uhunt.onlinejudge.org")
     -base string
       	Server base URL (default "https://next2solve.s106.net")
     -p string
       	Listening port (default "8002")
+
+Finally, open http://localhost:8002/ in your browser.
+
+![](templates/index.png)  ![](templates/problems.png)
+
 
 ## Testing
 
