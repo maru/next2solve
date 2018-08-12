@@ -22,9 +22,21 @@ Run (default listening port is 8002):
 
     ./next2solve
 
-You can change the port number with the option -p:
+Finally, open http://localhost:8002/ in your browser.
 
-    ./next2solve -p 8080
+![](templates/index.png)
+
+Usage of ./next2solve:
+    -api string
+        API URL (default "https://uhunt.onlinejudge.org")
+    -base string
+      	Server base URL (default "https://next2solve.s106.net")
+    -p string
+      	Listening port (default "8002")
+
+## Testing
+
+    go test next2solve next2solve/uhunt next2solve/problems
 
 You can also use a local testing server to provide the uHunt API responses,
 instead of the [uHunt live server](https://uhunt.onlinejudge.org/)
@@ -38,9 +50,3 @@ Terminal 1:
 Terminal 2:
 
     ./next2solve -api http://localhost:8080
-
-Open http://localhost:8002/ in your browser.
-
-## Testing
-
-  go test next2solve next2solve/uhunt next2solve/problems
