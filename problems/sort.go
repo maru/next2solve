@@ -212,7 +212,6 @@ func (a ProblemListACRatio) Less(i, j int) bool {
 	return pID < qID
 }
 
-
 // Sort problem list
 func sortProblemList(problemList []int, orderBy string) {
 	switch orderBy {
@@ -222,13 +221,13 @@ func sortProblemList(problemList []int, orderBy string) {
 		sort.Sort(ProblemListCategory(problemList))
 	case "lev":
 		sort.Sort(ProblemListLevel(problemList))
-  case "sub":
+	case "sub":
 		sort.Sort(ProblemListSubmissions(problemList))
-  case "ac":
+	case "ac":
 		sort.Sort(ProblemListAccepted(problemList))
-  case "acr":
+	case "acr":
 		sort.Sort(ProblemListACRatio(problemList))
-  case "dacu":
+	case "dacu":
 		sort.Sort(ProblemListLevel(problemList))
 	}
 }

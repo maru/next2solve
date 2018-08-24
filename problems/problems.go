@@ -23,15 +23,15 @@ type CPProblem struct {
 }
 
 type ProblemInfo struct {
-	ID      int
-	Number  int
-	Title   string
-	Level   int
-  TotalSubmissions int
-  TotalAccepted int
-	AcRatio int
-	Dacu    int
-	Star    bool
+	ID               int
+	Number           int
+	Title            string
+	Level            int
+	TotalSubmissions int
+	TotalAccepted    int
+	AcRatio          int
+	Dacu             int
+	Star             bool
 }
 
 const (
@@ -100,6 +100,13 @@ func loadProblemListCP3() {
 	numSubchapter := 100
 	numSection := 1000
 
+	// Get all problems
+	problems, err := apiServer.GetProblemList()
+	if err != nil {
+		log.Printf("Error: couldn't load problem list from API: %v\n", err)
+		return
+	}
+
 	// Load titles and problems
 	for _, chapter := range cpBook {
 		// Chapter
@@ -117,9 +124,9 @@ func loadProblemListCP3() {
 				for _, problemNumber := range arr[1:] {
 					// Get problem from API server
 					pNum := int(math.Abs(problemNumber.(float64)))
-					p, err := apiServer.GetProblemByNum(pNum)
-					if err != nil {
-						log.Println("Error: couldn't load problem ", pNum, ":", err.Error())
+					p, ok := problems[pNum]
+					if !ok {
+						log.Printf("Problem %d not found\n", pNum)
 						continue
 					}
 					// Set problem in cache
@@ -153,6 +160,7 @@ func refreshProblemCache(duration time.Duration) {
 		default:
 			timer1 := time.NewTimer(duration)
 			<-timer1.C
+			// problems := apiServer.GetProblemList()
 			for _, pID := range problemList {
 				p, err := apiServer.GetProblemByID(pID)
 				if err != nil {
@@ -256,9 +264,9 @@ func GetUnsolvedProblems(userid string, orderBy string) []ProblemInfo {
 // Get the unsolved problems by GetUnsolvedProblems and return one random problem.
 func GetUnsolvedProblemRandom(userid string) []ProblemInfo {
 	// Choose a problem with lowest dacu, starred first
-	unsolved := GetUnsolvedProblems(userid, "")
+	unsolved := GetUnsolvedProblems(userid, "dacu")
 	if len(unsolved) > 0 {
-		r := rand.Intn(len(unsolved))
+		r := rand.Intn(10)
 		return []ProblemInfo{unsolved[r]}
 	}
 	return []ProblemInfo{}

@@ -80,7 +80,7 @@ func TestInitAPIServer(t *testing.T) {
 // Test get chapter name of a problem. Problem list must be loaded in previous
 // test
 func TestGetChapter(t *testing.T) {
-	p := ProblemInfo{problemID, problemNumber, problemTitle, 0, 0, 0, false}
+	p := ProblemInfo{problemID, problemNumber, problemTitle, 0, 0, 0, 0, 0, false}
 	if p.GetChapter() != chapterTitle {
 		t.Fatalf("Expected %s, got %s", chapterTitle, p.GetChapter())
 	}
@@ -89,21 +89,8 @@ func TestGetChapter(t *testing.T) {
 // Test load problem list from CP3 book, but API server sends empty or invalid
 // response.
 func TestLoadProblemListCP3EmptyInvalidResponse(t *testing.T) {
-	ts := initAPITestServerInvalid(t, []string{"[]", ""})
+	ts := initAPITestServerInvalid(t, []string{"[]", "[]", ""})
 	defer test.CloseServer(ts)
-
-	if len(cpProblems) != 0 {
-		t.Fatalf("Expected %d problems", 0)
-	}
-	if len(cpTitles) != 0 {
-		t.Fatalf("Expected %d titles", 0)
-	}
-	if len(problemList) != 0 {
-		t.Fatalf("Expected %d problems, got %d", 0, len(problemList))
-	}
-
-	// Invalid response
-	loadProblemListCP3()
 
 	if len(cpProblems) != 0 {
 		t.Fatalf("Expected %d problems", 0)
@@ -156,7 +143,7 @@ func TestRefreshProblemCache(t *testing.T) {
 // Test get problem information, invalid problem ID
 func TestGetProblemInvalid(t *testing.T) {
 	// API server sends empty JSON object
-	ts := initAPITestServerInvalid(t, []string{"[]", "{}", "[]", ""})
+	ts := initAPITestServerInvalid(t, []string{"[]", "[]", "{}", "[]", ""})
 	defer test.CloseServer(ts)
 
 	problem := getProblem(problemID + 1000000)
@@ -250,7 +237,7 @@ func TestGetUnsolvedProblemsCPBookOk(t *testing.T) {
 
 // Test GetUnsolvedProblemsCPBook, invalid API response
 func TestGetUnsolvedProblemsCPBookInvalidResponse(t *testing.T) {
-	ts := initAPITestServerInvalid(t, []string{"[]", ""})
+	ts := initAPITestServerInvalid(t, []string{"[]", "[]", ""})
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemsCPBook(userID, "star")
@@ -283,7 +270,7 @@ func TestGetUnsolvedProblemRandomOk(t *testing.T) {
 
 // Test GetUnsolvedProblemRandom, invalid API response
 func TestGetUnsolvedProblemRandomInvalidResponse(t *testing.T) {
-	ts := initAPITestServerInvalid(t, []string{"[]", ""})
+	ts := initAPITestServerInvalid(t, []string{"[]", "[]", ""})
 	defer test.CloseServer(ts)
 
 	problems := GetUnsolvedProblemRandom(userID)
