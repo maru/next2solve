@@ -6,18 +6,22 @@
 // Main routine
 //
 // Usage of ./next2solve:
-//   -addr string
-//     	listening address (default ":8002")
 //   -api string
 //     	API URL (default "https://uhunt.onlinejudge.org")
+//   -p string
+//     	Listening port (default "8002")
 
 package main
 
-import "flag"
+import (
+	"flag"
+	"next2solve/server"
+)
 
 func main() {
 	APIUrl := flag.String("api", "https://uhunt.onlinejudge.org", "API URL")
-	addr := flag.String("addr", ":8002", "listening address")
+	port := flag.String("p", "8002", "Listening port")
 	flag.Parse()
-	HttpServerStart(*addr, *APIUrl)
+	*port = ":" + *port
+	server.HttpServerStart(*port, *APIUrl)
 }

@@ -1,27 +1,19 @@
 {{define "lucky"}}
 {{template "header" .}}
-      <div style="display:flex; justify-content:center; align-items:center; width:400px; height:100px;" class="lucky rainbow">{{ $p := index .Problems 0}}
+      <div class="lucky-problem">{{ $p := index .Problems 0}}
+        <p class="lucky rainbow">
         <a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}" target="_blank">
           {{$p.Number}}{{if $p.Star}}*{{end}}
           - {{$p.Title}}
         </a>
+        </p>
       </div>
     	<p>
         Level {{$p.Level}} -
         AC Ratio: {{$p.AcRatio}}%
       </p>
 
-      <form method="POST" action="">
-        <div style="margin-top:90px;">
-          <div class="logo-subtext">Enter your <a href="https://uva.onlinejudge.org" target="_blank">UVa</a> username:</div>
-        </div>
-        <div class="error">{{.UsernameError}}</div>
-        <div>
-          <input type="hidden" name="userid" value="{{.UserID}}">
-          <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off" style="text-align:center;margin-bottom:10px;height:20px;width:200px;">
-        </div>
-        <input type="submit" name="show-problems" value="Show all problems">
-        <input type="submit" name="feeling-lucky" value="Feeling lucky!">
-      </form>
+      {{template "form" .}}
+
 {{template "footer" .}}
 {{end}}

@@ -2,78 +2,48 @@
 {{template "header" .}}
     <div style="margin:50px 0px;">
       <div class="problems">
-        <h2>
-          <span class="rainbow-text">{{$.Username}}</span>:
-          {{len $.Problems}} problems to go!</h2>
+        <h2 class="sub-title">{{$.Username}}</h2>
+        <h3 class=""><span class="num-problems">{{len $.Problems}}</span> problems to go!</h3>
+        <p><a href="/lucky?u={{$.Username}}">Feeling lucky?</a></p>
         <small>
           {{if .IsOrderStar}}First showing star (*) problems, ordered by Category and Level{{end}}
           {{if .IsOrderCategory}}Ordered by Category and then Level{{end}}
           {{if .IsOrderLevel}}Ordered by Level{{end}}
         </small>
-        <table class="problems">
-          <thead><tr>
-            <th style="color:#666">#</th>
-            <th>
+        <table class="table table-hover table-striped problems">
+          <thead class="thead-light"><tr>
+            <th scope="col" style="color:#666">#</th>
+            <th scope="col" class="narrow-col2">
               Problem
             </th>
-            <th>
-              <a href="?all&u={{$.Username}}&o=star" title="Star problems">*</a>
+            <th scope="col" class="text-left">
+              <a href="/all?u={{$.Username}}&o=star" title="Sort by Star problems">*</a>
             </th>
-            <th style="text-align: center; width:209px; ">
-              <a href="?all&u={{$.Username}}&o=cat" title="Category">Category</a>
+            <th scope="col" class="text-center">
+              <a href="/all?u={{$.Username}}&o=cat" title="Sort by Category">Category</a>
             </th>
-            <th>
-              <a href="?all&u={{$.Username}}&o=lev" title="Level">Level</a>
-            </th>
-            <th style="text-align: center; font-weight:normal; font-size:80%">
-              <a href="?all&u={{$.Username}}&o=sub" title="Number of Submissions">Total<br />Submissions</a>
-            </th>
-            <th style="text-align: center; font-weight:normal; font-size:80%">
-              <a href="?all&u={{$.Username}}&o=ac" title="Number of Accepted Submissions">Total<br />AC</a>
-            </th>
-            <th style="text-align: center; font-weight:normal; font-size:80%">
-              <a href="?all&u={{$.Username}}&o=acr" title="Acceptance Ratio">AC %</a>
-            </th>
-            <th style="text-align: center; font-weight:normal; font-size:80%">
-              <a href="?all&u={{$.Username}}&o=dacu" title="Different Accepted Users">DACU</a>
+            <th scope="col">
+              <a href="/all?u={{$.Username}}&o=lev" title="Sort by Level">Level</a>
             </th>
           </tr></thead>
           <tbody>{{ range $i, $p := $.Problems }}
           <tr>
-            <td scope="row" style="color:#666; font-size:80%">{{inc $i}}</td>
-            <td style="text-align: right">{{$p.Number}}</td>
-            <td>
+            <th scope="row" style="color:#666; font-size:80%">{{inc $i}}</th>
+            <td class="narrow-col2 text-right">{{$p.Number}}</td>
+            <td class="text-left">
               {{if $p.Star}}*{{end}}
               <a href="https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem={{ $p.ID}}"
                  target="_blank" title="{{$p.GetChapter}}">
                 {{$p.Title}}</a>
             </td>
-            <td style="text-align: center">
-              <span style="font-size:90%">{{$p.GetChapter}}</span><br />
-              <span style="font-size:65%">{{$p.GetSubchapter}}</span> -
-              <span style="font-size:50%">{{$p.GetSection}}</span>
+            <td class="text-center">
+              <span style="font-size:90%" title="{{$p.GetSubchapter}} - {{$p.GetSection}}">{{$p.GetChapter}}</span><br />
             </td>
-            <td style="text-align: center">{{$p.Level}}</td>
-            <td style="text-align: center; font-size:85%">{{$p.TotalSubmissions}}</td>
-            <td style="text-align: center; font-size:85%">{{$p.TotalAccepted}}</td>
-            <td style="text-align: center; font-size:85%">{{$p.AcRatio}}%</td>
-            <td style="text-align: center; font-size:80%">{{$p.Dacu}}</td>
+            <td class="text-center">{{$p.Level}}</td>
           </tr>
         {{ end }}</tbody>
         </table>
       </div>
-      <form method="POST" action="">
-        <div style="margin-top:90px;">
-          <div class="logo-subtext">Enter your <a href="https://uva.onlinejudge.org" target="_blank">UVa</a> username:</div>
-        </div>
-        <div class="error">{{.UsernameError}}</div>
-        <div>
-          <input type="hidden" name="userid" value="{{.UserID}}">
-          <input id="username" maxlength="2048" name="username" title="Username" type="text" value="{{.Username}}" aria-label="Username" autocomplete="off" style="text-align:center;margin-bottom:10px;height:20px;width:200px;">
-        </div>
-        <input type="submit" name="show-problems" value="Show all problems">
-        <input type="submit" name="feeling-lucky" value="Feeling lucky!">
-      </form>
     </div>
 {{template "footer" .}}
 {{end}}
