@@ -31,7 +31,7 @@ func InitAPITestServerInvalid(t *testing.T, response []string) *httptest.Server 
 	idx = 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if idx >= len(response) {
-			panic("Not enough responses!")
+			t.Fatal("Not enough responses!")
 		}
 		fmt.Fprint(w, response[idx])
 		idx++
