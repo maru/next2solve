@@ -3,7 +3,7 @@
 //
 // Tests for handlers.go functionality
 //
-package main
+package server
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 	test "next2solve/testing"
 	"os"
 	"testing"
+	// "log"
 )
 
 // Valid userid and username values for testing
@@ -31,7 +32,7 @@ var (
 // HTTP API test server that responds all requests with an invalid response.
 // Wrap for test.InitAPITestServerInvalid function
 func initAPITestServerInvalid(t *testing.T, response []string) (*httptest.Server, *httptest.Server) {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	ts := httptest.NewServer(http.HandlerFunc(ServeHTTP))
 	api := test.InitAPITestServerInvalid(t, response)
 	problems.InitAPIServer(api.URL)
 	return ts, api
@@ -40,7 +41,8 @@ func initAPITestServerInvalid(t *testing.T, response []string) (*httptest.Server
 // HTTP API test server, real API responses were cached in files.
 // Wrap for test.InitAPITestServer function
 func initAPITestServer(t *testing.T) (*httptest.Server, *httptest.Server) {
-	ts := httptest.NewServer(http.HandlerFunc(RequestHandler))
+	ts := httptest.NewServer(http.HandlerFunc(ServeHTTP))
+
 	// Test against the real uHunt API web server
 	if realTest {
 		APIUrl := "https://uhunt.onlinejudge.org"
@@ -89,10 +91,6 @@ func TestInvalidUsername(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		t.Fatal("Expected status OK")
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
@@ -129,14 +127,13 @@ func TestValidUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	emtpyError := []byte("<div class=\"error\"></div>")
-	if bytes.Index(body, emtpyError) < 0 {
-		println(string(body))
-		t.Fatal("Expected error empty")
+	usernameText := "<h2 class=\"sub-title\">" + username + "</h2>"
+	if bytes.Index(body, []byte(usernameText)) < 0 {
+		t.Fatal("Expected username", username, "in response")
 	}
-	validUserID := "<input type=\"hidden\" name=\"userid\" value=\"" + userid + "\""
-	if bytes.Index(body, []byte(validUserID)) < 0 {
-		t.Fatal("Expected userid", userid, "in input text")
+
+	if bytes.Index(body, []byte("1337</span> problems to go!</h3>")) < 0 {
+		t.Fatal("Expected 1337 problems in response")
 	}
 }
 
@@ -192,9 +189,62 @@ func TestRandomProblemEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if bytes.Index(body, []byte("<div class=\"error\">No problems to solve</div>")) < 0 {
-		println(string(body))
+	if bytes.Index(body, []byte("No problems to solve!")) < 0 {
 		t.Fatalf("Expected no problems")
+	}
+}
+
+//  Get random problem to solve, but username empty
+func TestRandomProblemsUsernameEmpty(t *testing.T) {
+	ts, api := initAPITestServer(t)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	resp, err := http.Get(ts.URL + "/lucky?u=")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Index(body, []byte("Please enter your UVa username")) < 0 {
+		t.Fatal("Expected username empty error")
+	}
+}
+
+// Post an invalid username
+func TestRandomProblemInvalidUsername(t *testing.T) {
+	ts, api := initAPITestServer(t)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	invalidUsername := "not_" + username
+	resp, err := http.Get(ts.URL + "/lucky?u=" + invalidUsername)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	notFoundError := []byte("<div class=\"error\">Username not found</div>")
+	if bytes.Index(body, notFoundError) < 0 {
+		t.Fatal("Expected error 'Username not found'")
+	}
+	inputUsername := "title=\"Username\" type=\"text\" value=\"" + invalidUsername
+	if bytes.Index(body, []byte(inputUsername)) < 0 {
+		t.Fatal("Expected username ", invalidUsername, " in input text")
 	}
 }
 
@@ -227,7 +277,8 @@ func TestShowProblemsOk(t *testing.T) {
 	if bytes.Index(body, []byte("Error template")) >= 0 {
 		t.Fatal("Unexpected error")
 	}
-	if bytes.Index(body, []byte("1337 problems to go!</h2>")) < 0 {
+
+	if bytes.Index(body, []byte("1337</span> problems to go!</h3>")) < 0 {
 		t.Fatal("Expected problems number")
 	}
 }
@@ -251,8 +302,50 @@ func TestShowProblemsEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if bytes.Index(body, []byte("<div class=\"error\">No problems to solve</div>")) < 0 {
+	if bytes.Index(body, []byte("No problems to solve!")) < 0 {
 		t.Fatalf("Expected no problems")
+	}
+}
+
+//  Show problems, but username empty
+func TestShowProblemsUsernameEmpty(t *testing.T) {
+	ts, api := initAPITestServer(t)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	resp, err := http.Get(ts.URL + "/all?u=")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatal("Expected status OK")
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Index(body, []byte("Please enter your UVa username")) < 0 {
+		t.Fatal("Expected username empty error")
+	}
+}
+
+// Test request not found
+func TestRequestNotFound(t *testing.T) {
+	ts, api := initAPITestServer(t)
+	defer test.CloseServer(ts)
+	defer test.CloseServer(api)
+
+	resp, err := http.Get(ts.URL + "/notfound")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatal("Expected status Not Found")
 	}
 }
 
@@ -260,5 +353,6 @@ func TestShowProblemsEmpty(t *testing.T) {
 func TestMain(m *testing.M) {
 	flag.BoolVar(&realTest, "real", false, "Test with real uHunt API server")
 	flag.Parse()
+	LoadTemplates("../")
 	os.Exit(m.Run())
 }
