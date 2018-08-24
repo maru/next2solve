@@ -169,7 +169,7 @@ func TestRandomProblem(t *testing.T) {
 
 // Get random problem to solve, but nothing to solve
 func TestRandomProblemEmpty(t *testing.T) {
-	ts, api := initAPITestServerInvalid(t, []string{"[]", userid, "{}"})
+	ts, api := initAPITestServerInvalid(t, []string{"[]", "[]", userid, "{}"})
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
@@ -285,7 +285,7 @@ func TestShowProblemsOk(t *testing.T) {
 
 // Test show problems, but nothing to solve
 func TestShowProblemsEmpty(t *testing.T) {
-	ts, api := initAPITestServerInvalid(t, []string{"[]", userid, "{}"})
+	ts, api := initAPITestServerInvalid(t, []string{"[]", "[]", userid, "{}"})
 	defer test.CloseServer(ts)
 	defer test.CloseServer(api)
 
