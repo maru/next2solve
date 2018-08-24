@@ -178,8 +178,8 @@ func TestGetProblemList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error %v", err)
 	}
-	if problems[0].Title != "Introduction" {
-		t.Fatalf("Error %v", "title does not match")
+	if problems[100].Title != "The 3n + 1 problem" {
+		t.Fatalf("Error: title does not match: %v", problems[100].Title)
 	}
 }
 

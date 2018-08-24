@@ -16,7 +16,7 @@ import (
 const (
 	UrlUsernameToUserid  = "/api/uname2uid/%s"
 	UrlUserSubmissions   = "/api/subs-user/%s"
-	UrlProblemList       = "/api/p"
+	UrlProblemList       = "/api/p/"
 	UrlProblemListCPBook = "/api/cpbook/%d"
 	UrlProblemInfoByID   = "/api/p/id/%d"
 	UrlProblemInfoByNum  = "/api/p/num/%d"
@@ -38,6 +38,13 @@ func (api *APIServer) getResponse(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Response code not "200 OK"
+	if resp.StatusCode != http.StatusOK {
+		return []byte("0"), nil
+	}
+
+	// Read response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -59,9 +66,41 @@ func (api *APIServer) GetUserID(username string) (string, error) {
 }
 
 // Get the problem list of UVa online judge.
-// Implemented now: only problems from the CP book 3rd edition.
-func (api *APIServer) GetProblemList() ([]APICPBookChapter, error) {
-	return api.GetProblemListCPbook(3)
+func (api *APIServer) GetProblemList() (map[int]APIProblem, error) {
+	var problems map[int]APIProblem
+	problems = make(map[int]APIProblem)
+
+	resp, err := api.getResponse(UrlProblemList)
+	if err != nil {
+		return problems, err
+	}
+	// Parse the data
+	var decoded [][]interface{}
+	if err := json.Unmarshal(resp, &decoded); err != nil {
+		return problems, err
+	}
+	for _, v := range decoded {
+		var p APIProblem
+		p.ProblemID = int(v[0].(float64))
+		p.ProblemNumber = int(v[1].(float64))
+		p.Title = v[2].(string)
+		p.Dacu = int(v[3].(float64))
+		p.NumNoVerdict = int(v[6].(float64))
+		p.NumSubmissionError = int(v[7].(float64))
+		p.NumCantBeJudged = int(v[8].(float64))
+		p.NumInQueue = int(v[9].(float64))
+		p.NumCompilationError = int(v[10].(float64))
+		p.NumRestrictedFunction = int(v[11].(float64))
+		p.NumRuntimeError = int(v[12].(float64))
+		p.NumOutputLimitExceeded = int(v[13].(float64))
+		p.NumTimeLimitExceeded = int(v[14].(float64))
+		p.NumMemoryLimitExceeded = int(v[15].(float64))
+		p.NumWrongAnswer = int(v[16].(float64))
+		p.NumPresentationError = int(v[17].(float64))
+		p.NumAccepted = int(v[18].(float64))
+		problems[p.ProblemNumber] = p
+	}
+	return problems, nil
 }
 
 // Get the problem list from the CP book from edition 1, 2, or 3.
