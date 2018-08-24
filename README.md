@@ -28,8 +28,6 @@ Usage of ./next2solve:
 
     -api string
         API URL (default "https://uhunt.onlinejudge.org")
-    -base string
-      	Server base URL (default "https://next2solve.s106.net")
     -p string
       	Listening port (default "8002")
 
@@ -40,7 +38,13 @@ Finally, open http://localhost:8002/ in your browser.
 
 ## Testing
 
-    go test next2solve next2solve/uhunt next2solve/problems
+    go test next2solve/server next2solve/uhunt next2solve/problems
+
+Code coverage:
+
+    go test -coverprofile=cover.out next2solve/server next2solve/uhunt next2solve/problems
+    go tool cover -html=cover.out
+
 
 You can also use a local testing server to provide the uHunt API responses,
 instead of the [uHunt live server](https://uhunt.onlinejudge.org/)
