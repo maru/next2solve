@@ -46,6 +46,9 @@ func InitAPITestServer(t *testing.T) *httptest.Server {
 	baseDirectory := path.Dir(filename)
 	// Create a test API web server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.RequestURI == "/api/p/" {
+			r.RequestURI = "/api/p/index.html"
+		}
 		response, err := ioutil.ReadFile(path.Join(baseDirectory, r.RequestURI))
 		if err != nil {
 			t.Fatalf("Error %v", err)
