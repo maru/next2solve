@@ -48,7 +48,7 @@ func (api *APIServer) getResponse(url string) ([]byte, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return body, err
 	}
 	return body, nil
 }
@@ -58,7 +58,7 @@ func (api *APIServer) getResponse(url string) ([]byte, error) {
 func (api *APIServer) GetUserID(username string) (string, error) {
 	url := fmt.Sprintf(UrlUsernameToUserid, username)
 	resp, err := api.getResponse(url)
-	if err != nil {
+	if err != nil && len(resp) == 0 {
 		return "", err
 	}
 	id := string(resp)
