@@ -13,7 +13,7 @@ import (
 
 // Handles requests
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL.Path)
+	log.Printf("%s %v\n", r.Method, r.URL)
 
 	switch r.URL.Path {
 	case "/":
