@@ -7,14 +7,17 @@ package server
 
 import (
 	"log"
-        "net"
+	"net"
 	"net/http"
 	"next2solve/problems"
 )
 
 // Handles requests
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip := r.Header.Get("X-Forwarded-For")
+	if ip == "" {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
 	log.Printf("[%v] %s %s\n", ip, r.Method, r.URL.Path)
 
 	switch r.URL.Path {
