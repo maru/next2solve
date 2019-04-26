@@ -22,6 +22,6 @@ func main() {
 	APIUrl := flag.String("api", "https://uhunt.onlinejudge.org", "API URL")
 	port := flag.String("p", "8002", "Listening port")
 	flag.Parse()
-	*port = ":" + *port
+	*port = "127.0.0.1:" + *port
 	server.HttpServerStart(*port, *APIUrl)
 }

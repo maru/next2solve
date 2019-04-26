@@ -7,13 +7,15 @@ package server
 
 import (
 	"log"
+        "net"
 	"net/http"
 	"next2solve/problems"
 )
 
 // Handles requests
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %v\n", r.Method, r.URL)
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	log.Printf("[%v] %s %s\n", ip, r.Method, r.URL.Path)
 
 	switch r.URL.Path {
 	case "/":
