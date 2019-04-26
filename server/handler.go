@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"next2solve/problems"
+	"os"
 )
 
 // Handles requests
@@ -134,7 +135,14 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Set handlers, initialize API server and start HTTP server
-func HttpServerStart(addr string, apiUrl string) {
+func HttpServerStart(addr string, apiUrl string, logfile string) {
+	if logfile != "" {
+		file, err := os.OpenFile(logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+		if err != nil {
+			log.Fatal("Could not create logfile ", logfile)
+		}
+		log.SetOutput(file)
+	}
 	LoadTemplates()
 	problems.InitAPIServer(apiUrl)
 	http.HandleFunc("/", ServeHTTP)
