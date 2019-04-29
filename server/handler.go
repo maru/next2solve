@@ -19,7 +19,7 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ip == "" {
 		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
-	log.Printf("[%v] %s %s\n", ip, r.Method, r.URL.Path)
+	log.Printf("- %v - %s %v\n", ip, r.Method, r.URL)
 
 	switch r.URL.Path {
 	case "/":
